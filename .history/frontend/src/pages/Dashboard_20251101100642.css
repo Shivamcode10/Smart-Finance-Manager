@@ -1,0 +1,298 @@
+/* Dashboard.css */
+.dashboard-container {
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.dashboard-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.dashboard-title {
+  font-size: 24px;
+  font-weight: bold;
+  color: #1f2937;
+}
+
+.period-selector {
+  display: flex;
+  gap: 8px;
+}
+
+.period-select {
+  padding: 8px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background-color: white;
+  color: #1f2937;
+}
+
+/* Summary Cards */
+.summary-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+.summary-card {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+}
+
+.card-content {
+  display: flex;
+  align-items: center;
+}
+
+.card-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 16px;
+}
+
+.income-icon {
+  background-color: #d1fae5;
+}
+
+.expense-icon {
+  background-color: #fee2e2;
+}
+
+.balance-icon {
+  background-color: #dbeafe;
+}
+
+.icon {
+  width: 24px;
+  height: 24px;
+}
+
+.income-icon .icon {
+  color: #10b981;
+}
+
+.expense-icon .icon {
+  color: #ef4444;
+}
+
+.balance-icon .icon {
+  color: #3b82f6;
+}
+
+.card-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  margin-bottom: 4px;
+}
+
+.card-value {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+}
+
+/* Charts */
+.charts-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+  margin-bottom: 24px;
+}
+
+/* Sections */
+.section-container {
+  margin-bottom: 24px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: 500;
+  color: #1f2937;
+  margin-bottom: 16px;
+}
+
+/* Transactions & Goals */
+.transactions-goals-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+.transactions-container, .goals-container {
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+}
+
+.transactions-list, .goals-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.transaction-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px;
+  background-color: #f9fafb;
+  border-radius: 6px;
+}
+
+.transaction-description {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.transaction-meta {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.transaction-amount {
+  text-align: right;
+}
+
+.amount {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.amount.income {
+  color: #10b981;
+}
+
+.amount.expense {
+  color: #ef4444;
+}
+
+.transaction-emotion {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* Goals */
+.goal-item {
+  margin-bottom: 16px;
+}
+
+.goal-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.goal-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1f2937;
+}
+
+.goal-percentage {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 8px;
+  background-color: #e5e7eb;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #6366f1;
+  border-radius: 4px;
+}
+
+/* Alerts */
+.alerts-container {
+  margin-top: 24px;
+  background-color: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  padding: 24px;
+}
+
+.alerts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.alert-item {
+  padding: 12px;
+  border-radius: 6px;
+}
+
+.alert-item.danger {
+  background-color: #fef2f2;
+  color: #991b1b;
+}
+
+.alert-item.warning {
+  background-color: #fffbeb;
+  color: #92400e;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  .dashboard-title {
+    color: #f9fafb;
+  }
+  
+  .period-select {
+    background-color: #374151;
+    border-color: #4b5563;
+    color: #f9fafb;
+  }
+  
+  .summary-card, .transactions-container, .goals-container, .alerts-container {
+    background-color: #1f2937;
+  }
+  
+  .card-label, .transaction-meta, .goal-percentage, .transaction-emotion {
+    color: #9ca3af;
+  }
+  
+  .card-value, .transaction-description, .goal-title, .section-title {
+    color: #f9fafb;
+  }
+  
+  .transaction-item {
+    background-color: #374151;
+  }
+  
+  .progress-bar {
+    background-color: #4b5563;
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .summary-cards, .charts-container, .transactions-goals-container {
+    grid-template-columns: 1fr;
+  }
+  
+  .dashboard-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+}

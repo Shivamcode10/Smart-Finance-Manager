@@ -1,0 +1,312 @@
+import React, { useState, useContext, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { FinanceContext } from '../context/FinanceContext';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FiMail, FiLock, FiUser, FiTrendingUp, FiDollarSign, FiCreditCard, FiPieChart, FiShield } from 'react-icons/fi';
+
+const LoginSignup = () => {
+  const [isLogin, setIsLogin] = useState(true);
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+  });
+  const [focusedInput, setFocusedInput] = useState('');
+  const { login, register, isAuthenticated, error } = useContext(FinanceContext);
+  const navigate = useNavigate();
+
+  const { name, email, password } = formData;
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
+
+  const onChange = e => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const onSubmit = e => {
+    e.preventDefault();
+    if (isLogin) {
+      login({ email, password });
+    } else {
+      register({ name, email, password });
+    }
+  };
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.1
+      }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 12
+      }
+    }
+  };
+
+  const formVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: {
+      opacity: 1,
+      x: 0,
+      transition: {
+        type: "spring",
+        stiffness: 100,
+        damping: 12
+      }
+    },
+    exit: {
+      opacity: 0,
+      x: 20,
+      transition: {
+        duration: 0.3
+      }
+    }
+  };
+
+  const buttonVariants = {
+    hover: {
+      scale: 1.02,
+      transition: { duration: 0.2 }
+    },
+    tap: { scale: 0.98 }
+  };
+
+  // Finance icons for floating animation
+  const financeIcons = [
+    { icon: FiDollarSign, color: 'text-teal-500', size: 'h-8 w-8', delay: 0 },
+    { icon: FiTrendingUp, color: 'text-blue-500', size: 'h-10 w-10', delay: 0.5 },
+    { icon: FiCreditCard, color: 'text-indigo-500', size: 'h-9 w-9', delay: 1 },
+    { icon: FiPieChart, color: 'text-cyan-500', size: 'h-7 w-7', delay: 1.5 },
+    { icon: FiShield, color: 'text-emerald-500', size: 'h-11 w-11', delay: 2 },
+  ];
+
+  return (
+    <div className="min-h-screen relative overflow-hidden flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 bg-gray-50 dark:bg-gray-900">
+      {/* Background with subtle gradient */}
+      <div className="fixed inset-0 z-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-blue-50 via-white to-teal-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900" />
+        <div className="absolute inset-0 bg-gradient-to-tr from-blue-100/20 via-transparent to-teal-100/20 dark:from-blue-900/20 dark:to-teal-900/20" />
+      </div>
+      
+      {/* Floating finance icons */}
+      <div className="fixed inset-0 z-10 overflow-hidden pointer-events-none">
+        {financeIcons.map((item, index) => {
+          const Icon = item.icon;
+          return (
+            <motion.div
+              key={index}
+              className={`absolute ${item.color} opacity-20 dark:opacity-10`}
+              style={{
+                top: `${Math.random() * 80 + 10}%`,
+                left: `${Math.random() * 80 + 10}%`,
+              }}
+              animate={{
+                y: [0, -20, 0],
+                rotate: [0, 5, 0],
+              }}
+              transition={{
+                duration: 6 + index,
+                delay: item.delay,
+                repeat: Infinity,
+                repeatType: "reverse",
+                ease: "easeInOut",
+              }}
+            >
+              <Icon className={`${item.size}`} />
+            </motion.div>
+          );
+        })}
+      </div>
+      
+      {/* Main content container */}
+      <motion.div 
+        className="relative z-20 w-full max-w-md"
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
+        <motion.div 
+          className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-xl rounded-2xl shadow-xl p-8 border border-gray-200/50 dark:border-gray-700/50"
+          variants={itemVariants}
+        >
+          {/* Logo and title */}
+          <motion.div 
+            className="flex justify-center mb-6"
+            variants={itemVariants}
+          >
+            <div className="p-3 bg-gradient-to-r from-blue-500 to-teal-500 rounded-full shadow-lg">
+              <FiDollarSign className="h-8 w-8 text-white" />
+            </div>
+          </motion.div>
+          
+          <motion.div 
+            className="text-center mb-8"
+            variants={itemVariants}
+          >
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              {isLogin ? 'Welcome Back' : 'Create Account'}
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400">
+              {isLogin 
+                ? 'Sign in to access your Smart Finance Manager' 
+                : 'Join us to take control of your finances'}
+            </p>
+          </motion.div>
+
+          {/* Form with animated transitions */}
+          <AnimatePresence mode="wait">
+            <motion.form 
+              key={isLogin ? 'login' : 'signup'}
+              className="space-y-6" 
+              onSubmit={onSubmit}
+              variants={formVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
+            >
+              {error && (
+                <motion.div 
+                  className="bg-red-100 dark:bg-red-900/20 border border-red-300 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg"
+                  variants={itemVariants}
+                >
+                  {error}
+                </motion.div>
+              )}
+              
+              <div className="space-y-4">
+                {!isLogin && (
+                  <motion.div variants={itemVariants}>
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Full Name
+                    </label>
+                    <div className="relative">
+                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <FiUser className="h-5 w-5 text-gray-400" />
+                      </div>
+                      <input
+                        id="name"
+                        name="name"
+                        type="text"
+                        autoComplete="name"
+                        required
+                        value={name}
+                        onChange={onChange}
+                        onFocus={() => setFocusedInput('name')}
+                        onBlur={() => setFocusedInput('')}
+                        className={`appearance-none relative block w-full pl-10 pr-3 py-3 border ${focusedInput === 'name' ? 'border-blue-500 ring-1 ring-blue-500' : 'border-gray-300 dark:border-gray-600'} placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-all`}
+                        placeholder="John Doe"
+                      />
+                    </div>
+                  </motion.div>
+                )}
+                
+                <motion.div variants={itemVariants}>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Email Address
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FiMail className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      id="email"
+                      name="email"
+                      type="email"
+                      autoComplete="email"
+                      required
+                      value={email}
+                      onChange={onChange}
+                      onFocus={() => setFocusedInput('email')}
+                      onBlur={() => setFocusedInput('')}
+                      className={`appearance-none relative block w-full pl-10 pr-3 py-3 border ${focusedInput === 'email' ? 'border-blue-500 ring-1 ring-blue-500' : 'border-gray-300 dark:border-gray-600'} placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-all`}
+                      placeholder="name@example.com"
+                    />
+                  </div>
+                </motion.div>
+                
+                <motion.div variants={itemVariants}>
+                  <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Password
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                      <FiLock className="h-5 w-5 text-gray-400" />
+                    </div>
+                    <input
+                      id="password"
+                      name="password"
+                      type="password"
+                      autoComplete="current-password"
+                      required
+                      value={password}
+                      onChange={onChange}
+                      onFocus={() => setFocusedInput('password')}
+                      onBlur={() => setFocusedInput('')}
+                      className={`appearance-none relative block w-full pl-10 pr-3 py-3 border ${focusedInput === 'password' ? 'border-blue-500 ring-1 ring-blue-500' : 'border-gray-300 dark:border-gray-600'} placeholder-gray-500 dark:placeholder-gray-400 text-gray-900 dark:text-white bg-white dark:bg-gray-700 rounded-lg focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-all`}
+                      placeholder="••••••••"
+                    />
+                  </div>
+                </motion.div>
+              </div>
+
+              <motion.div variants={itemVariants}>
+                <motion.button
+                  type="submit"
+                  className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-blue-500 to-teal-500 hover:from-blue-600 hover:to-teal-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all"
+                  variants={buttonVariants}
+                  whileHover="hover"
+                  whileTap="tap"
+                >
+                  {isLogin ? 'Sign In' : 'Sign Up'}
+                  <FiTrendingUp className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </motion.button>
+              </motion.div>
+
+              <motion.div 
+                className="text-center pt-4"
+                variants={itemVariants}
+              >
+                <button
+                  type="button"
+                  onClick={() => setIsLogin(!isLogin)}
+                  className="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300 transition-colors"
+                >
+                  {isLogin
+                    ? "Don't have an account? Sign up"
+                    : 'Already have an account? Sign in'}
+                </button>
+              </motion.div>
+            </motion.form>
+          </AnimatePresence>
+        </motion.div>
+        
+        <motion.div 
+          className="mt-6 text-center text-gray-500 dark:text-gray-400 text-sm"
+          variants={itemVariants}
+        >
+          <p>By continuing, you agree to our Terms of Service and Privacy Policy</p>
+        </motion.div>
+      </motion.div>
+    </div>
+  );
+};
+
+export default LoginSignup;
