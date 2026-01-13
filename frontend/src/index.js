@@ -1,13 +1,12 @@
-// frontend/src/index.js
-import React from "react";
-import ReactDOM from "react-dom/client";
+import React from 'react';
+import ReactDOM from 'react-dom/client';   // ✅ MISSING LINE
 import { HashRouter } from "react-router-dom";
 
-import App from "./App";
-import "./index.css";
-import "./App.css";
+import App from './App';
+import './index.css';
+import './App.css';
 
-const root = ReactDOM.createRoot(document.getElementById("root"));
+const root = ReactDOM.createRoot(document.getElementById('root'));
 
 root.render(
   <HashRouter>
