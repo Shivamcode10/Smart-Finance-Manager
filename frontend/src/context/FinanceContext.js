@@ -230,53 +230,45 @@ export const FinanceProvider = ({ children }) => {
   process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
 
 
-  
-  useEffect(() => {
-    const newSocket = io(
-  process.env.REACT_APP_SOCKET_URL || 'http://localhost:5000',
-  { withCredentials: true }
-);
+useEffect(() => {
+  if (!state.user) return;
 
-    setSocket(newSocket);
-    
-    return () => newSocket.close();
-  }, []);
+  const SOCKET_URL =
+    process.env.REACT_APP_SOCKET_URL || 'http://localhost:5000';
+
+  const newSocket = io(SOCKET_URL, {
+    auth: {
+      token: localStorage.getItem('token'),
+    },
+    transports: ['websocket'],
+  });
+
+  setSocket(newSocket);
+
+  newSocket.emit('join', state.user._id);
+
+  newSocket.on('newTransaction', (transaction) => {
+    dispatch({ type: 'ADD_TRANSACTION', payload: transaction });
+    getStats();
+  });
+
+  newSocket.on('updatedTransaction', (transaction) => {
+    dispatch({ type: 'UPDATE_TRANSACTION', payload: transaction });
+    getStats();
+  });
+
+  newSocket.on('deletedTransaction', (transactionId) => {
+    dispatch({ type: 'DELETE_TRANSACTION', payload: transactionId });
+    getStats();
+  });
+
+  return () => {
+    newSocket.disconnect();
+  };
+}, [state.user]);
+
 
   
-  useEffect(() => {
-    if (socket && state.user) {
-      
-      socket.emit('join', state.user._id);
-      
-     
-      socket.on('newTransaction', (transaction) => {
-        dispatch({
-          type: 'ADD_TRANSACTION',
-          payload: transaction,
-        });
-        
-        getStats();
-      });
-      
-      socket.on('updatedTransaction', (transaction) => {
-        dispatch({
-          type: 'UPDATE_TRANSACTION',
-          payload: transaction,
-        });
-        
-        getStats();
-      });
-      
-      socket.on('deletedTransaction', (transactionId) => {
-        dispatch({
-          type: 'DELETE_TRANSACTION',
-          payload: transactionId,
-        });
-        
-        getStats();
-      });
-    }
-  }, [socket, state.user]);
 
  
   const loadUser = async () => {

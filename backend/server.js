@@ -27,6 +27,17 @@ const io = new Server(server, {
   },
 });
 
+// 🔐 Socket.IO auth middleware (VERY IMPORTANT)
+io.use((socket, next) => {
+  const token = socket.handshake.auth?.token;
+
+  if (!token) {
+    return next(new Error("Unauthorized socket connection"));
+  }
+
+  // (Optional) you can verify JWT here later
+  next();
+});
 
 const connectedUsers = new Map();
 
