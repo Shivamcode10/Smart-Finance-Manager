@@ -226,11 +226,17 @@ export const FinanceProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
 
   
-  axios.defaults.baseURL = 'http://localhost:5000/api';
+  axios.defaults.baseURL =
+  process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+
 
   
   useEffect(() => {
-    const newSocket = io('http://localhost:5000');
+    const newSocket = io(
+  process.env.REACT_APP_SOCKET_URL || 'http://localhost:5000',
+  { withCredentials: true }
+);
+
     setSocket(newSocket);
     
     return () => newSocket.close();
