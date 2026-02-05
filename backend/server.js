@@ -14,8 +14,9 @@ const server = http.createServer(app);
 
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://smart-finance-manager.netlify.app" // 🔥 frontend URL (update if different)
+  "https://smart-finance-managerweb.netlify.app"
 ];
+
 
 
 const io = new Server(server, {
@@ -25,6 +26,7 @@ const io = new Server(server, {
     credentials: true,
   },
 });
+
 
 const connectedUsers = new Map();
 
