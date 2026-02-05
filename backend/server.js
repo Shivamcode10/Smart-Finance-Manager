@@ -70,20 +70,23 @@ app.use(express.urlencoded({ extended: false }));
 app.use(
   cors({
     origin: function (origin, callback) {
-      if (!origin || allowedOrigins.includes(origin)) {
+      if (!origin) return callback(null, true);
+
+      const allowed = allowedOrigins.some(o =>
+        origin.startsWith(o)
+      );
+
+      if (allowed) {
         callback(null, true);
       } else {
-        callback(new Error("Not allowed by CORS"));
+        callback(new Error("Not allowed by CORS: " + origin));
       }
     },
     credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
 app.options("*", cors());
-
 
 app.get("/", (req, res) => {
   res.send("Smart Finance Manager API is running 🚀");
