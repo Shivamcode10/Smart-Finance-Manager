@@ -1,4 +1,4 @@
-// frontend/src/App.jsx
+
 import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { FinanceProvider, FinanceContext } from './context/FinanceContext';
@@ -20,7 +20,7 @@ function AppContent() {
   const { isAuthenticated, loading, theme } = useContext(FinanceContext);
 
   useEffect(() => {
-    // Apply theme to document
+    
     if (theme === 'dark') {
       document.documentElement.classList.add('dark');
     } else {

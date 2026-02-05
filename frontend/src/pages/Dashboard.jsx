@@ -1,4 +1,4 @@
-// frontend/src/pages/Dashboard.jsx
+
 import React, { useEffect, useState, useContext } from 'react';
 import { FinanceContext } from '../context/FinanceContext';
 import { Doughnut, Line } from 'react-chartjs-2';

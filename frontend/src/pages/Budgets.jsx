@@ -1,4 +1,4 @@
-// frontend/src/pages/Budgets.jsx
+
 import React, { useEffect, useState, useContext } from 'react';
 import { FinanceContext } from '../context/FinanceContext';
 import BudgetProgressCard from '../components/BudgetProgressCard';
@@ -40,7 +40,7 @@ const Budgets = () => {
     setEditingBudget(null);
   };
 
-  // Sort budgets based on selected criteria
+  
   const sortedBudgets = [...budgets].sort((a, b) => {
     switch (sortBy) {
       case 'percentage':

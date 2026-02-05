@@ -1,4 +1,4 @@
-// backend/models/Goal.js
+
 const mongoose = require('mongoose');
 
 const GoalSchema = new mongoose.Schema({

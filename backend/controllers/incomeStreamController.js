@@ -1,9 +1,7 @@
-// backend/controllers/incomeStreamController.js
+
 const IncomeStream = require('../models/IncomeStream');
 
-// @desc    Get all income streams
-// @route   GET /api/income-streams
-// @access  Private
+
 exports.getIncomeStreams = async (req, res) => {
   try {
     const incomeStreams = await IncomeStream.find({ user: req.user.id }).sort({ createdAt: -1 });
@@ -18,14 +16,12 @@ exports.getIncomeStreams = async (req, res) => {
   }
 };
 
-// @desc    Get single income stream
-// @route   GET /api/income-streams/:id
-// @access  Private
+
 exports.getIncomeStream = async (req, res) => {
   try {
     const incomeStream = await IncomeStream.findById(req.params.id);
 
-    // Make sure user owns income stream
+    
     if (incomeStream.user.toString() !== req.user.id) {
       return res.status(401).json({
         success: false,
@@ -42,12 +38,10 @@ exports.getIncomeStream = async (req, res) => {
   }
 };
 
-// @desc    Create new income stream
-// @route   POST /api/income-streams
-// @access  Private
+
 exports.createIncomeStream = async (req, res) => {
   try {
-    // Add user to req.body
+    
     req.body.user = req.user.id;
 
     const incomeStream = await IncomeStream.create(req.body);
@@ -61,14 +55,12 @@ exports.createIncomeStream = async (req, res) => {
   }
 };
 
-// @desc    Update income stream
-// @route   PUT /api/income-streams/:id
-// @access  Private
+
 exports.updateIncomeStream = async (req, res) => {
   try {
     let incomeStream = await IncomeStream.findById(req.params.id);
 
-    // Make sure user owns income stream
+   
     if (incomeStream.user.toString() !== req.user.id) {
       return res.status(401).json({
         success: false,
@@ -90,14 +82,12 @@ exports.updateIncomeStream = async (req, res) => {
   }
 };
 
-// @desc    Delete income stream
-// @route   DELETE /api/income-streams/:id
-// @access  Private
+
 exports.deleteIncomeStream = async (req, res) => {
   try {
     const incomeStream = await IncomeStream.findById(req.params.id);
 
-    // Make sure user owns income stream
+    
     if (incomeStream.user.toString() !== req.user.id) {
       return res.status(401).json({
         success: false,
@@ -105,7 +95,7 @@ exports.deleteIncomeStream = async (req, res) => {
       });
     }
 
-    // Use deleteOne instead of remove
+   
     await IncomeStream.deleteOne({ _id: req.params.id });
 
     res.status(200).json({
@@ -117,9 +107,7 @@ exports.deleteIncomeStream = async (req, res) => {
   }
 };
 
-// @desc    Get monthly income estimate
-// @route   GET /api/income-streams/estimate
-// @access  Private
+
 exports.getMonthlyIncomeEstimate = async (req, res) => {
   try {
     const incomeStreams = await IncomeStream.find({ 
@@ -135,13 +123,13 @@ exports.getMonthlyIncomeEstimate = async (req, res) => {
       
       switch (stream.frequency) {
         case 'one-time':
-          // For one-time, we don't include in monthly estimate
+         
           break;
         case 'weekly':
-          monthlyAmount = stream.amount * 4.33; // Average weeks in a month
+          monthlyAmount = stream.amount * 4.33; 
           break;
         case 'bi-weekly':
-          monthlyAmount = stream.amount * 2.17; // Average bi-weekly periods in a month
+          monthlyAmount = stream.amount * 2.17; 
           break;
         case 'monthly':
           monthlyAmount = stream.amount;

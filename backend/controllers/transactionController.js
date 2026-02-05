@@ -1,9 +1,7 @@
 // backend/controllers/transactionController.js
 const Transaction = require('../models/Transaction');
 
-// @desc    Get all transactions
-// @route   GET /api/transactions
-// @access  Private
+
 exports.getTransactions = async (req, res) => {
   try {
     const transactions = await Transaction.find({ user: req.user.id }).sort({
@@ -20,9 +18,7 @@ exports.getTransactions = async (req, res) => {
   }
 };
 
-// @desc    Get single transaction
-// @route   GET /api/transactions/:id
-// @access  Private
+
 exports.getTransaction = async (req, res) => {
   try {
     const transaction = await Transaction.findById(req.params.id);
@@ -44,17 +40,15 @@ exports.getTransaction = async (req, res) => {
   }
 };
 
-// @desc    Add transaction
-// @route   POST /api/transactions
-// @access  Private
+
 exports.addTransaction = async (req, res) => {
   try {
-    // Add user to req.body
+   
     req.body.user = req.user.id;
 
     const transaction = await Transaction.create(req.body);
     
-    // Get Socket.IO instance from app and emit real-time update
+    
     const io = req.app.get('io');
     if (io) {
       io.to(req.user.id).emit('newTransaction', transaction);
@@ -69,14 +63,12 @@ exports.addTransaction = async (req, res) => {
   }
 };
 
-// @desc    Update transaction
-// @route   PUT /api/transactions/:id
-// @access  Private
+
 exports.updateTransaction = async (req, res) => {
   try {
     let transaction = await Transaction.findById(req.params.id);
 
-    // Make sure user owns transaction
+    
     if (transaction.user.toString() !== req.user.id) {
       return res.status(401).json({
         success: false,
@@ -89,7 +81,7 @@ exports.updateTransaction = async (req, res) => {
       runValidators: true,
     });
     
-    // Get Socket.IO instance from app and emit real-time update
+    
     const io = req.app.get('io');
     if (io) {
       io.to(req.user.id).emit('updatedTransaction', transaction);
@@ -104,14 +96,12 @@ exports.updateTransaction = async (req, res) => {
   }
 };
 
-// @desc    Delete transaction
-// @route   DELETE /api/transactions/:id
-// @access  Private
+
 exports.deleteTransaction = async (req, res) => {
   try {
     const transaction = await Transaction.findById(req.params.id);
 
-    // Make sure user owns transaction
+    
     if (transaction.user.toString() !== req.user.id) {
       return res.status(401).json({
         success: false,
@@ -119,10 +109,10 @@ exports.deleteTransaction = async (req, res) => {
       });
     }
 
-    // Use deleteOne instead of remove
+    
     await Transaction.deleteOne({ _id: req.params.id });
     
-    // Get Socket.IO instance from app and emit real-time update
+    
     const io = req.app.get('io');
     if (io) {
       io.to(req.user.id).emit('deletedTransaction', req.params.id);
@@ -137,15 +127,13 @@ exports.deleteTransaction = async (req, res) => {
   }
 };
 
-// @desc    Get transaction statistics
-// @route   GET /api/transactions/stats
-// @access  Private
+
 exports.getTransactionStats = async (req, res) => {
   try {
     const { period } = req.query;
     let startDate = new Date();
     
-    // Set start date based on period
+    
     if (period === 'week') {
       startDate.setDate(startDate.getDate() - 7);
     } else if (period === 'month') {
@@ -153,7 +141,7 @@ exports.getTransactionStats = async (req, res) => {
     } else if (period === 'year') {
       startDate.setFullYear(startDate.getFullYear() - 1);
     } else {
-      // Default to current month
+      
       startDate.setDate(1);
     }
 
@@ -162,7 +150,7 @@ exports.getTransactionStats = async (req, res) => {
       date: { $gte: startDate },
     });
 
-    // Calculate totals
+    
     const income = transactions
       .filter(t => t.type === 'income')
       .reduce((sum, t) => sum + t.amount, 0);
@@ -171,7 +159,7 @@ exports.getTransactionStats = async (req, res) => {
       .filter(t => t.type === 'expense')
       .reduce((sum, t) => sum + t.amount, 0);
 
-    // Group by category
+   
     const categoryData = {};
     transactions.forEach(t => {
       if (!categoryData[t.category]) {
@@ -184,7 +172,7 @@ exports.getTransactionStats = async (req, res) => {
       }
     });
 
-    // Group by date
+    
     const dailyData = {};
     transactions.forEach(t => {
       const date = t.date.toISOString().split('T')[0];

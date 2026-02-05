@@ -1,8 +1,8 @@
-// frontend/src/components/VoiceCommands.jsx
+
 import React, { useState, useEffect, useRef } from 'react';
 import { FiMic, FiMicOff, FiVolume2, FiBook, FiX } from 'react-icons/fi';
 
-// IMPORTANT: This list should match your backend's enum values.
+
 const VALID_CATEGORIES = [
   'Food', 'Transport', 'Shopping', 'Entertainment', 'Bills', 'Healthcare', 'Education', 'Other'
 ];
@@ -44,7 +44,7 @@ const VoiceCommands = ({ addTransaction, stats, transactions }) => {
         setIsListening(false);
       };
     }
-  }, [stats, transactions]); // Rerun if stats/transactions change
+  }, [stats, transactions]); 
 
   const startListening = () => {
     if (!recognitionRef.current) {
@@ -72,7 +72,7 @@ const VoiceCommands = ({ addTransaction, stats, transactions }) => {
 
   const speak = (text) => {
     if ('speechSynthesis' in window) {
-      window.speechSynthesis.cancel(); // Stop any previous speech
+      window.speechSynthesis.cancel();
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.rate = 1;
       utterance.pitch = 1;
@@ -87,7 +87,7 @@ const VoiceCommands = ({ addTransaction, stats, transactions }) => {
     setIsProcessing(true);
     setFeedback('⏳ Processing...');
 
-    // --- 1. QUERY COMMANDS (Checking information) ---
+    
     if (lowerCommand.includes('balance') || lowerCommand.includes('how much money')) {
       const balance = stats.balance;
       const message = `Your current balance is $${balance.toLocaleString()}.`;
@@ -115,23 +115,23 @@ const VoiceCommands = ({ addTransaction, stats, transactions }) => {
       return;
     }
 
-    // --- 2. TRANSACTION COMMANDS (Adding data) ---
+  
     let matched = false;
     let amount = null;
     let description = '';
-    let category = VALID_CATEGORIES[0]; // Default to 'Food'
+    let category = VALID_CATEGORIES[0]; 
 
-    // More flexible patterns to find amount
+   
     const amountMatch = lowerCommand.match(/(\d+(?:\.\d+)?)/);
     if (amountMatch) {
       amount = parseFloat(amountMatch[1]);
     }
 
-    // More flexible patterns to find description
+    
     const descPatterns = [
-      /for (.+)/i,      // "add $50 for lunch"
-      /on (.+)/i,       // "spent $50 on lunch"
-      /from (.+)/i,     // "got $50 from salary"
+      /for (.+)/i,      
+      /on (.+)/i,       
+      /from (.+)/i,     
     ];
     for (const pattern of descPatterns) {
       const match = lowerCommand.match(pattern);
@@ -141,7 +141,7 @@ const VoiceCommands = ({ addTransaction, stats, transactions }) => {
       }
     }
     
-    // Determine transaction type
+    
     const isIncome = lowerCommand.includes('income') || lowerCommand.includes('received') || lowerCommand.includes('got') || lowerCommand.includes('earned');
 
     if (amount !== null && description) {
@@ -171,7 +171,7 @@ const VoiceCommands = ({ addTransaction, stats, transactions }) => {
       matched = true;
     }
 
-    // --- 3. HELP COMMAND ---
+   
     if (!matched && (lowerCommand.includes('help') || lowerCommand.includes('what can i say'))) {
       setShowGuide(true);
       setIsProcessing(false);

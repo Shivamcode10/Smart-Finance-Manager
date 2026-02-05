@@ -1,9 +1,7 @@
-// backend/controllers/goalController.js
+
 const Goal = require('../models/Goal');
 
-// @desc    Get all goals
-// @route   GET /api/goals
-// @access  Private
+
 exports.getGoals = async (req, res) => {
   try {
     const goals = await Goal.find({ user: req.user.id }).sort({ createdAt: -1 });
@@ -18,14 +16,12 @@ exports.getGoals = async (req, res) => {
   }
 };
 
-// @desc    Get single goal
-// @route   GET /api/goals/:id
-// @access  Private
+
 exports.getGoal = async (req, res) => {
   try {
     const goal = await Goal.findById(req.params.id);
 
-    // Make sure user owns goal
+    
     if (goal.user.toString() !== req.user.id) {
       return res.status(401).json({
         success: false,
@@ -42,12 +38,10 @@ exports.getGoal = async (req, res) => {
   }
 };
 
-// @desc    Create new goal
-// @route   POST /api/goals
-// @access  Private
+
 exports.createGoal = async (req, res) => {
   try {
-    // Add user to req.body
+    
     req.body.user = req.user.id;
 
     const goal = await Goal.create(req.body);
@@ -61,14 +55,12 @@ exports.createGoal = async (req, res) => {
   }
 };
 
-// @desc    Update goal
-// @route   PUT /api/goals/:id
-// @access  Private
+
 exports.updateGoal = async (req, res) => {
   try {
     let goal = await Goal.findById(req.params.id);
 
-    // Make sure user owns goal
+   
     if (goal.user.toString() !== req.user.id) {
       return res.status(401).json({
         success: false,
@@ -90,14 +82,12 @@ exports.updateGoal = async (req, res) => {
   }
 };
 
-// @desc    Delete goal
-// @route   DELETE /api/goals/:id
-// @access  Private
+
 exports.deleteGoal = async (req, res) => {
   try {
     const goal = await Goal.findById(req.params.id);
 
-    // Make sure user owns goal
+    
     if (goal.user.toString() !== req.user.id) {
       return res.status(401).json({
         success: false,
@@ -105,7 +95,7 @@ exports.deleteGoal = async (req, res) => {
       });
     }
 
-    // Use deleteOne instead of remove
+    
     await Goal.deleteOne({ _id: req.params.id });
 
     res.status(200).json({
@@ -117,16 +107,14 @@ exports.deleteGoal = async (req, res) => {
   }
 };
 
-// @desc    Update goal progress
-// @route   PUT /api/goals/:id/progress
-// @access  Private
+
 exports.updateGoalProgress = async (req, res) => {
   try {
     const { amount } = req.body;
     
     let goal = await Goal.findById(req.params.id);
 
-    // Make sure user owns goal
+    
     if (goal.user.toString() !== req.user.id) {
       return res.status(401).json({
         success: false,

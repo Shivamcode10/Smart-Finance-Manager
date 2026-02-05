@@ -13,7 +13,7 @@ const SmartSearch = ({ transactions, onFilter }) => {
   const [showFilters, setShowFilters] = useState(false);
   const [suggestions, setSuggestions] = useState([]);
 
-  // Generate smart suggestions
+  
   useEffect(() => {
     if (searchTerm.length > 2) {
       const filtered = transactions.filter(t => 
@@ -27,11 +27,11 @@ const SmartSearch = ({ transactions, onFilter }) => {
     }
   }, [searchTerm, transactions]);
 
-  // Apply filters
+  
   useEffect(() => {
     let filtered = transactions;
 
-    // Search term
+    
     if (searchTerm) {
       filtered = filtered.filter(t => 
         t.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -39,17 +39,17 @@ const SmartSearch = ({ transactions, onFilter }) => {
       );
     }
 
-    // Type filter
+    
     if (filters.type !== 'all') {
       filtered = filtered.filter(t => t.type === filters.type);
     }
 
-    // Category filter
+    
     if (filters.category !== 'all') {
       filtered = filtered.filter(t => t.category === filters.category);
     }
 
-    // Date range filter
+    
     if (filters.dateRange !== 'all') {
       const now = new Date();
       let startDate;
@@ -72,7 +72,7 @@ const SmartSearch = ({ transactions, onFilter }) => {
       filtered = filtered.filter(t => new Date(t.date) >= startDate);
     }
 
-    // Amount range filter
+    
     if (filters.amountRange !== 'all') {
       filtered = filtered.filter(t => {
         switch (filters.amountRange) {
@@ -88,7 +88,7 @@ const SmartSearch = ({ transactions, onFilter }) => {
       });
     }
 
-    // Emotion filter
+    
     if (filters.emotion !== 'all') {
       filtered = filtered.filter(t => t.emotion === filters.emotion);
     }

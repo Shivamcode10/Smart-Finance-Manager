@@ -1,4 +1,4 @@
-// backend/models/Transaction.js
+
 const mongoose = require('mongoose');
 
 const TransactionSchema = new mongoose.Schema({
@@ -16,7 +16,7 @@ const TransactionSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Please add a category'],
     enum: [
-      // Expense categories
+      
       'Food',
       'Bills',
       'Transportation',
@@ -26,7 +26,7 @@ const TransactionSchema = new mongoose.Schema({
       'Education',
       'Travel',
       'Other',
-      // Income categories
+      
       'Salary',
       'Freelance',
       'Investment',

@@ -1,4 +1,4 @@
-// backend/routes/goalRoutes.js
+
 const express = require('express');
 const router = express.Router();
 const {
@@ -11,7 +11,7 @@ const {
 } = require('../controllers/goalController');
 const { protect } = require('../middleware/authMiddleware');
 
-router.use(protect); // All routes in this file will use the protect middleware
+router.use(protect); 
 
 router.route('/').get(getGoals).post(createGoal);
 router

@@ -37,10 +37,10 @@ const BudgetForecast = ({ transactions, budgets }) => {
   }, [transactions, budgets, forecastPeriod]);
 
   const generateForecast = () => {
-    // Calculate spending trends
+    
     const spendingTrends = calculateSpendingTrends();
     
-    // Generate predictions for each budget
+   
     const predictions = budgets.map(budget => {
       const categorySpending = spendingTrends[budget.category] || [];
       const prediction = predictSpending(categorySpending, forecastPeriod);
@@ -58,7 +58,7 @@ const BudgetForecast = ({ transactions, budgets }) => {
   const calculateSpendingTrends = () => {
     const trends = {};
     
-    // Group transactions by category and date
+    
     transactions.forEach(transaction => {
       if (transaction.type === 'expense') {
         if (!trends[transaction.category]) {
@@ -71,7 +71,7 @@ const BudgetForecast = ({ transactions, budgets }) => {
       }
     });
 
-    // Calculate trends for each category
+    
     Object.keys(trends).forEach(category => {
       trends[category] = trends[category].sort((a, b) => new Date(a.date) - new Date(b.date));
     });
@@ -88,8 +88,8 @@ const BudgetForecast = ({ transactions, budgets }) => {
       };
     }
 
-    // Simple linear regression for prediction
-    const n = Math.min(spendingData.length, 30); // Use last 30 transactions
+    
+    const n = Math.min(spendingData.length, 30); 
     const recentData = spendingData.slice(-n);
     
     let sumX = 0, sumY = 0, sumXY = 0, sumX2 = 0;
@@ -106,9 +106,9 @@ const BudgetForecast = ({ transactions, budgets }) => {
     const slope = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
     const intercept = (sumY - slope * sumX) / n;
 
-    // Predict future spending
+   
     let predicted = 0;
-    let daysToPredict = 30; // Default to 30 days
+    let daysToPredict = 30; 
     
     switch (period) {
       case 'week':
@@ -129,7 +129,7 @@ const BudgetForecast = ({ transactions, budgets }) => {
       predicted += slope * (n + i) + intercept;
     }
 
-    // Calculate confidence based on data consistency
+  
     const variance = recentData.reduce((sum, transaction) => {
       const expected = slope * recentData.indexOf(transaction) + intercept;
       return sum + Math.pow(transaction.amount - expected, 2);
@@ -166,7 +166,7 @@ const BudgetForecast = ({ transactions, budgets }) => {
     const categorySpending = calculateSpendingTrends()[budget.category] || [];
     const dailyData = {};
     
-    // Organize spending by date
+    
     categorySpending.forEach(transaction => {
       const date = transaction.date.split('T')[0];
       if (!dailyData[date]) {
@@ -175,7 +175,7 @@ const BudgetForecast = ({ transactions, budgets }) => {
       dailyData[date] += transaction.amount;
     });
 
-    // Create chart data
+    
     const sortedDates = Object.keys(dailyData).sort();
     const last30Days = sortedDates.slice(-30);
     

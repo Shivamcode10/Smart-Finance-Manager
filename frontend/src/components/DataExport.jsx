@@ -45,8 +45,7 @@ const DataExport = ({ transactions, goals, budgets, incomeStreams }) => {
   };
 
   const exportToPDF = async (data, filename) => {
-    // This would require a PDF library like jsPDF
-    // For now, we'll create a simple HTML-based PDF
+   
     const htmlContent = `
       <html>
         <head>

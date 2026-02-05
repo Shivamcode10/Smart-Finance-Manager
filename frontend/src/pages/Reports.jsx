@@ -1,4 +1,4 @@
-// frontend/src/pages/Reports.jsx
+
 import React, { useEffect, useContext } from 'react';
 import { FinanceContext } from '../context/FinanceContext';
 import FinancialReports from '../components/FinancialReports';

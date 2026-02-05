@@ -1,4 +1,4 @@
-// frontend/src/components/Navbar.jsx
+
 import React, { useState, useContext } from 'react';
 import { FinanceContext } from '../context/FinanceContext';
 import { FiBell, FiUser, FiLogOut, FiSun, FiMoon } from 'react-icons/fi';

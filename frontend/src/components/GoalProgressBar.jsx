@@ -1,4 +1,4 @@
-// frontend/src/components/GoalProgressBar.jsx
+
 import React from 'react';
 
 const GoalProgressBar = ({ goal }) => {

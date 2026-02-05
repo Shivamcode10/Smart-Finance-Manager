@@ -1,4 +1,4 @@
-// backend/routes/incomeStreamRoutes.js
+
 const express = require('express');
 const router = express.Router();
 const {
@@ -11,7 +11,7 @@ const {
 } = require('../controllers/incomeStreamController');
 const { protect } = require('../middleware/authMiddleware');
 
-router.use(protect); // All routes in this file will use the protect middleware
+router.use(protect); 
 
 router.route('/').get(getIncomeStreams).post(createIncomeStream);
 router.route('/estimate').get(getMonthlyIncomeEstimate);

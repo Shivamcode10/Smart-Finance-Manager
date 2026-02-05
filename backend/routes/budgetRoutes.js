@@ -1,4 +1,4 @@
-// backend/routes/budgetRoutes.js
+
 const express = require('express');
 const router = express.Router();
 const {
@@ -11,7 +11,7 @@ const {
 } = require('../controllers/budgetController');
 const { protect } = require('../middleware/authMiddleware');
 
-router.use(protect); // All routes in this file will use the protect middleware
+router.use(protect); 
 
 router.route('/').get(getBudgets).post(createBudget);
 router.route('/alerts').get(getBudgetAlerts);

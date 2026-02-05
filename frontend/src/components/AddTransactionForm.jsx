@@ -1,4 +1,4 @@
-// frontend/src/components/AddTransactionForm.jsx
+
 import React, { useState, useContext } from 'react';
 import { FinanceContext } from '../context/FinanceContext';
 import { FiX } from 'react-icons/fi';

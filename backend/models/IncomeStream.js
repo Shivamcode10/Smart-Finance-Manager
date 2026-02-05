@@ -1,4 +1,4 @@
-// backend/models/IncomeStream.js
+
 const mongoose = require('mongoose');
 
 const IncomeStreamSchema = new mongoose.Schema({

@@ -1,6 +1,6 @@
-// frontend/src/components/FloatingCalculatorButton.jsx
+
 import React, { useState } from 'react';
-import { FiGrid } from 'react-icons/fi'; // <-- CHANGE TO FiGrid
+import { FiGrid } from 'react-icons/fi'; 
 import AdvancedCalculator from './AdvancedCalculator';
 
 const FloatingCalculatorButton = () => {

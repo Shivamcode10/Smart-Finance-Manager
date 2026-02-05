@@ -8,9 +8,9 @@ const FinancialCalendar = () => {
   const [viewMode, setViewMode] = useState('month');
   const [selectedDateTransactions, setSelectedDateTransactions] = useState([]);
 
-  // ✅ Fix timezone issue with helper function
+  
   const formatDate = (date) => {
-    return date.toLocaleDateString('en-CA'); // returns YYYY-MM-DD in local timezone
+    return date.toLocaleDateString('en-CA'); 
   };
 
   useEffect(() => {

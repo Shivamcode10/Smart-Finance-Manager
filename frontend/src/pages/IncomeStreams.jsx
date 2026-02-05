@@ -1,4 +1,4 @@
-// frontend/src/pages/IncomeStreams.jsx
+
 import React, { useEffect, useState, useContext } from 'react';
 import { FinanceContext } from '../context/FinanceContext';
 import { FiPlus, FiEdit2, FiTrash2, FiDollarSign } from 'react-icons/fi';

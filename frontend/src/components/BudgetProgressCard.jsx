@@ -11,7 +11,7 @@ const BudgetProgressCard = ({ budget, onUpdate }) => {
   const isOverBudget = percentage >= 100;
   const isNearLimit = percentage >= 80 && percentage < 100;
 
-  // Animate progress bar on mount
+  
   useEffect(() => {
     const timer = setTimeout(() => {
       setAnimatedProgress(percentage);
@@ -19,7 +19,7 @@ const BudgetProgressCard = ({ budget, onUpdate }) => {
     return () => clearTimeout(timer);
   }, [percentage]);
 
-  // Calculate time left
+  
   useEffect(() => {
     const now = new Date();
     const endDate = new Date(budget.endDate);

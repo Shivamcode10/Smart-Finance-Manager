@@ -1,4 +1,4 @@
-// frontend/src/components/LoginSignup.jsx
+
 import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FinanceContext } from '../context/FinanceContext';
@@ -37,12 +37,11 @@ const LoginSignup = () => {
     else register({ name, email, password });
   };
 
-  // Animations
   const container = { hidden: { opacity: 0 }, visible: { opacity: 1, transition: { when: 'beforeChildren', staggerChildren: 0.06 } } };
   const item = { hidden: { y: 14, opacity: 0 }, visible: { y: 0, opacity: 1, transition: { type: 'spring', stiffness: 110, damping: 14 } } };
   const formVariants = { hidden: { opacity: 0, x: -20 }, visible: { opacity: 1, x: 0, transition: { type: 'spring', stiffness: 110, damping: 16 } }, exit: { opacity: 0, x: 20, transition: { duration: 0.25 } } };
 
-  // Floating/Decor
+  
   const currencySymbols = ['$', '€', '£', '¥', '₹', '₽', '₩', '₺'];
   const floating = Array.from({ length: 12 }).map((_, i) => ({
     id: i,

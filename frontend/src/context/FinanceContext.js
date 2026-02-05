@@ -1,9 +1,9 @@
-// frontend/src/context/FinanceContext.js
+
 import React, { createContext, useReducer, useEffect, useState } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
 
-// Initial state
+
 const initialState = {
   user: null,
   isAuthenticated: false,
@@ -24,10 +24,9 @@ const initialState = {
   error: null,
 };
 
-// Create context
+
 export const FinanceContext = createContext(initialState);
 
-// Reducer
 const financeReducer = (state, action) => {
   switch (action.type) {
     case 'USER_LOADED':
@@ -221,15 +220,15 @@ const financeReducer = (state, action) => {
   }
 };
 
-// Create provider
+
 export const FinanceProvider = ({ children }) => {
   const [state, dispatch] = useReducer(financeReducer, initialState);
   const [socket, setSocket] = useState(null);
 
-  // Set base URL for axios
+  
   axios.defaults.baseURL = 'http://localhost:5000/api';
 
-  // Initialize socket connection
+  
   useEffect(() => {
     const newSocket = io('http://localhost:5000');
     setSocket(newSocket);
@@ -237,19 +236,19 @@ export const FinanceProvider = ({ children }) => {
     return () => newSocket.close();
   }, []);
 
-  // Join user room when authenticated and listen for real-time updates
+  
   useEffect(() => {
     if (socket && state.user) {
-      // Join user's personal room
+      
       socket.emit('join', state.user._id);
       
-      // Listen for real-time transaction updates
+     
       socket.on('newTransaction', (transaction) => {
         dispatch({
           type: 'ADD_TRANSACTION',
           payload: transaction,
         });
-        // Refresh stats to reflect the new transaction
+        
         getStats();
       });
       
@@ -258,7 +257,7 @@ export const FinanceProvider = ({ children }) => {
           type: 'UPDATE_TRANSACTION',
           payload: transaction,
         });
-        // Refresh stats to reflect the updated transaction
+        
         getStats();
       });
       
@@ -267,18 +266,18 @@ export const FinanceProvider = ({ children }) => {
           type: 'DELETE_TRANSACTION',
           payload: transactionId,
         });
-        // Refresh stats to reflect the deleted transaction
+        
         getStats();
       });
     }
   }, [socket, state.user]);
 
-  // Load user
+ 
   const loadUser = async () => {
     const token = localStorage.token;
     
     if (token) {
-      // Set the token in axios headers BEFORE making the request
+      
       setAuthToken(token);
       
       try {
@@ -296,7 +295,7 @@ export const FinanceProvider = ({ children }) => {
     }
   };
 
-  // Set auth token header
+  
   const setAuthToken = token => {
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
@@ -307,20 +306,20 @@ export const FinanceProvider = ({ children }) => {
     }
   };
 
-  // Clear error
+  
   const clearError = () => {
     dispatch({ type: 'CLEAR_ERROR' });
   };
 
-  // Register user
+  
   const register = async formData => {
     try {
       const res = await axios.post('/auth/register', formData);
       
-      // Store token
+      
       localStorage.setItem('token', res.data.token);
       
-      // Set token in headers
+      
       setAuthToken(res.data.token);
       
       dispatch({
@@ -328,7 +327,7 @@ export const FinanceProvider = ({ children }) => {
         payload: res.data,
       });
       
-      // Load user data immediately after successful registration
+      
       await loadUser();
     } catch (err) {
       dispatch({
@@ -338,15 +337,15 @@ export const FinanceProvider = ({ children }) => {
     }
   };
 
-  // Login user
+  
   const login = async formData => {
     try {
       const res = await axios.post('/auth/login', formData);
       
-      // Store token
+      
       localStorage.setItem('token', res.data.token);
       
-      // Set token in headers
+      
       setAuthToken(res.data.token);
       
       dispatch({
@@ -354,7 +353,7 @@ export const FinanceProvider = ({ children }) => {
         payload: res.data,
       });
       
-      // Load user data immediately after successful login
+      
       await loadUser();
     } catch (err) {
       dispatch({
@@ -364,16 +363,16 @@ export const FinanceProvider = ({ children }) => {
     }
   };
 
-  // Logout
+
   const logout = () => {
-    // Disconnect socket when logging out
+    
     if (socket) {
       socket.disconnect();
     }
     dispatch({ type: 'LOGOUT' });
   };
 
-  // Get transactions
+  
   const getTransactions = async () => {
     try {
       const res = await axios.get('/transactions');
@@ -382,7 +381,7 @@ export const FinanceProvider = ({ children }) => {
         payload: res.data.data,
       });
     } catch (err) {
-      // Only log out if it's an auth error (401)
+      
       if (err.response?.status === 401) {
         dispatch({
           type: 'AUTH_ERROR',
@@ -397,28 +396,28 @@ export const FinanceProvider = ({ children }) => {
     }
   };
 
-  // Add transaction - Updated to immediately update state
+  
   const addTransaction = async formData => {
     try {
       const res = await axios.post('/transactions', formData);
       
-      // Immediately update the state with the new transaction
+      
       dispatch({
         type: 'ADD_TRANSACTION',
         payload: res.data.data,
       });
       
-      // Return the transaction data
+      
       return res.data.data;
     } catch (err) {
-      // Only log out if it's an auth error (401)
+      
       if (err.response?.status === 401) {
         dispatch({
           type: 'AUTH_ERROR',
           payload: err.response.data.message,
         });
       } else {
-        // Create a proper error object to throw
+        
         const error = new Error(err.response?.data?.message || 'Failed to add transaction');
         error.status = err.response?.status;
         throw error;
@@ -426,28 +425,28 @@ export const FinanceProvider = ({ children }) => {
     }
   };
 
-  // Update transaction
+  
   const updateTransaction = async (id, formData) => {
     try {
       const res = await axios.put(`/transactions/${id}`, formData);
       
-      // Immediately update the state with the updated transaction
+     
       dispatch({
         type: 'UPDATE_TRANSACTION',
         payload: res.data.data,
       });
       
-      // Return the transaction data
+      
       return res.data.data;
     } catch (err) {
-      // Only log out if it's an auth error (401)
+     
       if (err.response?.status === 401) {
         dispatch({
           type: 'AUTH_ERROR',
           payload: err.response.data.message,
         });
       } else {
-        // Create a proper error object to throw
+        
         const error = new Error(err.response?.data?.message || 'Failed to update transaction');
         error.status = err.response?.status;
         throw error;
@@ -455,25 +454,25 @@ export const FinanceProvider = ({ children }) => {
     }
   };
 
-  // Delete transaction
+ 
   const deleteTransaction = async id => {
     try {
       await axios.delete(`/transactions/${id}`);
       
-      // Immediately update the state by removing the transaction
+    
       dispatch({
         type: 'DELETE_TRANSACTION',
         payload: id,
       });
     } catch (err) {
-      // Only log out if it's an auth error (401)
+      
       if (err.response?.status === 401) {
         dispatch({
           type: 'AUTH_ERROR',
           payload: err.response.data.message,
         });
       } else {
-        // Create a proper error object to throw
+      
         const error = new Error(err.response?.data?.message || 'Failed to delete transaction');
         error.status = err.response?.status;
         throw error;
@@ -481,7 +480,7 @@ export const FinanceProvider = ({ children }) => {
     }
   };
 
-  // Get stats
+  
   const getStats = async (period = 'month') => {
     try {
       const res = await axios.get(`/transactions/stats?period=${period}`);
@@ -490,7 +489,7 @@ export const FinanceProvider = ({ children }) => {
         payload: res.data.data,
       });
     } catch (err) {
-      // Only log out if it's an auth error (401)
+     
       if (err.response?.status === 401) {
         dispatch({
           type: 'AUTH_ERROR',
@@ -505,7 +504,7 @@ export const FinanceProvider = ({ children }) => {
     }
   };
 
-  // Get goals
+  
   const getGoals = async () => {
     try {
       const res = await axios.get('/goals');
@@ -514,7 +513,7 @@ export const FinanceProvider = ({ children }) => {
         payload: res.data.data,
       });
     } catch (err) {
-      // Only log out if it's an auth error (401)
+      
       if (err.response?.status === 401) {
         dispatch({
           type: 'AUTH_ERROR',
@@ -529,7 +528,7 @@ export const FinanceProvider = ({ children }) => {
     }
   };
 
-  // Add goal
+ 
   const addGoal = async formData => {
     try {
       const res = await axios.post('/goals', formData);
@@ -539,7 +538,7 @@ export const FinanceProvider = ({ children }) => {
       });
       return res.data.data;
     } catch (err) {
-      // Only log out if it's an auth error (401)
+      
       if (err.response?.status === 401) {
         dispatch({
           type: 'AUTH_ERROR',
@@ -554,7 +553,7 @@ export const FinanceProvider = ({ children }) => {
     }
   };
 
-  // Update goal
+ 
   const updateGoal = async (id, formData) => {
     try {
       const res = await axios.put(`/goals/${id}`, formData);
@@ -564,7 +563,7 @@ export const FinanceProvider = ({ children }) => {
       });
       return res.data.data;
     } catch (err) {
-      // Only log out if it's an auth error (401)
+      
       if (err.response?.status === 401) {
         dispatch({
           type: 'AUTH_ERROR',
@@ -579,7 +578,7 @@ export const FinanceProvider = ({ children }) => {
     }
   };
 
-  // Update goal progress
+  
   const updateGoalProgress = async (id, amount) => {
     try {
       const res = await axios.put(`/goals/${id}/progress`, { amount });
@@ -589,7 +588,7 @@ export const FinanceProvider = ({ children }) => {
       });
       return res.data.data;
     } catch (err) {
-      // Only log out if it's an auth error (401)
+      
       if (err.response?.status === 401) {
         dispatch({
           type: 'AUTH_ERROR',
@@ -604,7 +603,7 @@ export const FinanceProvider = ({ children }) => {
     }
   };
 
-  // Delete goal
+ 
   const deleteGoal = async id => {
     try {
       await axios.delete(`/goals/${id}`);
@@ -613,7 +612,7 @@ export const FinanceProvider = ({ children }) => {
         payload: id,
       });
     } catch (err) {
-      // Only log out if it's an auth error (401)
+      
       if (err.response?.status === 401) {
         dispatch({
           type: 'AUTH_ERROR',
@@ -628,7 +627,7 @@ export const FinanceProvider = ({ children }) => {
     }
   };
 
-  // Get budgets
+  
   const getBudgets = async () => {
     try {
       const res = await axios.get('/budgets');
@@ -637,7 +636,7 @@ export const FinanceProvider = ({ children }) => {
         payload: res.data.data,
       });
     } catch (err) {
-      // Only log out if it's an auth error (401)
+      
       if (err.response?.status === 401) {
         dispatch({
           type: 'AUTH_ERROR',
@@ -652,7 +651,7 @@ export const FinanceProvider = ({ children }) => {
     }
   };
 
-  // Add budget
+  
   const addBudget = async formData => {
     try {
       const res = await axios.post('/budgets', formData);
@@ -662,7 +661,7 @@ export const FinanceProvider = ({ children }) => {
       });
       return res.data.data;
     } catch (err) {
-      // Only log out if it's an auth error (401)
+      
       if (err.response?.status === 401) {
         dispatch({
           type: 'AUTH_ERROR',
@@ -677,7 +676,7 @@ export const FinanceProvider = ({ children }) => {
     }
   };
 
-  // Update budget
+  
   const updateBudget = async (id, formData) => {
     try {
       const res = await axios.put(`/budgets/${id}`, formData);
@@ -687,7 +686,7 @@ export const FinanceProvider = ({ children }) => {
       });
       return res.data.data;
     } catch (err) {
-      // Only log out if it's an auth error (401)
+      
       if (err.response?.status === 401) {
         dispatch({
           type: 'AUTH_ERROR',
@@ -702,7 +701,7 @@ export const FinanceProvider = ({ children }) => {
     }
   };
 
-  // Delete budget
+ 
   const deleteBudget = async id => {
     try {
       await axios.delete(`/budgets/${id}`);
@@ -711,7 +710,7 @@ export const FinanceProvider = ({ children }) => {
         payload: id,
       });
     } catch (err) {
-      // Only log out if it's an auth error (401)
+      
       if (err.response?.status === 401) {
         dispatch({
           type: 'AUTH_ERROR',
@@ -726,7 +725,7 @@ export const FinanceProvider = ({ children }) => {
     }
   };
 
-  // Get income streams
+
   const getIncomeStreams = async () => {
     try {
       const res = await axios.get('/income-streams');
@@ -735,7 +734,7 @@ export const FinanceProvider = ({ children }) => {
         payload: res.data.data,
       });
     } catch (err) {
-      // Only log out if it's an auth error (401)
+      
       if (err.response?.status === 401) {
         dispatch({
           type: 'AUTH_ERROR',
@@ -750,7 +749,7 @@ export const FinanceProvider = ({ children }) => {
     }
   };
 
-  // Add income stream
+
   const addIncomeStream = async formData => {
     try {
       const res = await axios.post('/income-streams', formData);
@@ -760,7 +759,7 @@ export const FinanceProvider = ({ children }) => {
       });
       return res.data.data;
     } catch (err) {
-      // Only log out if it's an auth error (401)
+      
       if (err.response?.status === 401) {
         dispatch({
           type: 'AUTH_ERROR',
@@ -775,7 +774,7 @@ export const FinanceProvider = ({ children }) => {
     }
   };
 
-  // Update income stream
+  
   const updateIncomeStream = async (id, formData) => {
     try {
       const res = await axios.put(`/income-streams/${id}`, formData);
@@ -785,7 +784,7 @@ export const FinanceProvider = ({ children }) => {
       });
       return res.data.data;
     } catch (err) {
-      // Only log out if it's an auth error (401)
+      
       if (err.response?.status === 401) {
         dispatch({
           type: 'AUTH_ERROR',
@@ -800,7 +799,7 @@ export const FinanceProvider = ({ children }) => {
     }
   };
 
-  // Delete income stream
+
   const deleteIncomeStream = async id => {
     try {
       await axios.delete(`/income-streams/${id}`);
@@ -809,7 +808,7 @@ export const FinanceProvider = ({ children }) => {
         payload: id,
       });
     } catch (err) {
-      // Only log out if it's an auth error (401)
+      
       if (err.response?.status === 401) {
         dispatch({
           type: 'AUTH_ERROR',
@@ -824,7 +823,7 @@ export const FinanceProvider = ({ children }) => {
     }
   };
 
-  // Get alerts
+ 
   const getAlerts = async () => {
     try {
       const res = await axios.get('/budgets/alerts');
@@ -833,7 +832,7 @@ export const FinanceProvider = ({ children }) => {
         payload: res.data.data,
       });
     } catch (err) {
-      // Only log out if it's an auth error (401)
+      
       if (err.response?.status === 401) {
         dispatch({
           type: 'AUTH_ERROR',
@@ -848,7 +847,7 @@ export const FinanceProvider = ({ children }) => {
     }
   };
 
-  // Set theme
+ 
   const setTheme = theme => {
     dispatch({
       type: 'SET_THEME',
@@ -856,7 +855,7 @@ export const FinanceProvider = ({ children }) => {
     });
   };
 
-  // Update user details
+  
   const updateUserDetails = async formData => {
     try {
       const res = await axios.put('/auth/updatedetails', formData);
@@ -866,7 +865,7 @@ export const FinanceProvider = ({ children }) => {
       });
       return res.data.data;
     } catch (err) {
-      // Only log out if it's an auth error (401)
+      
       if (err.response?.status === 401) {
         dispatch({
           type: 'AUTH_ERROR',
@@ -881,7 +880,7 @@ export const FinanceProvider = ({ children }) => {
     }
   };
 
-  // Initialize
+  
   useEffect(() => {
     loadUser();
   }, []);

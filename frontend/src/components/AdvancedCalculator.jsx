@@ -1,4 +1,4 @@
-// frontend/src/components/AdvancedCalculator.jsx
+
 import React, { useState, useEffect, useRef } from 'react';
 import { FiX, FiCopy, FiChevronDown, FiChevronUp, FiMic, FiSun, FiMoon, FiClock, FiDollarSign, FiPercent, FiTrendingUp, FiHome } from 'react-icons/fi';
 
@@ -10,10 +10,10 @@ const AdvancedCalculator = ({ isOpen, onClose }) => {
   const [history, setHistory] = useState([]);
   const [memory, setMemory] = useState(0);
   const [showHistory, setShowHistory] = useState(false);
-  const [mode, setMode] = useState('standard'); // standard, scientific, financial
+  const [mode, setMode] = useState('standard');
   const [darkMode, setDarkMode] = useState(true);
   const [isListening, setIsListening] = useState(false);
-  const [activeTab, setActiveTab] = useState('calculator'); // calculator, currency, tip, loan
+  const [activeTab, setActiveTab] = useState('calculator'); 
   const [currencyFrom, setCurrencyFrom] = useState('USD');
   const [currencyTo, setCurrencyTo] = useState('EUR');
   const [currencyAmount, setCurrencyAmount] = useState('1');
@@ -27,7 +27,7 @@ const AdvancedCalculator = ({ isOpen, onClose }) => {
   const [emiResult, setEmiResult] = useState(null);
   const resultRef = useRef(null);
 
-  // Currency rates (simplified for demo)
+  
   const currencyRates = {
     USD: { EUR: 0.85, GBP: 0.73, JPY: 110.15, INR: 74.5 },
     EUR: { USD: 1.18, GBP: 0.86, JPY: 129.8, INR: 87.8 },
@@ -61,7 +61,7 @@ const AdvancedCalculator = ({ isOpen, onClose }) => {
   }, [isListening]);
 
   useEffect(() => {
-    // Calculate currency conversion when inputs change
+    
     if (currencyRates[currencyFrom] && currencyRates[currencyTo]) {
       const rate = currencyRates[currencyFrom][currencyTo];
       setCurrencyResult((parseFloat(currencyAmount) * rate).toFixed(2));
@@ -69,7 +69,7 @@ const AdvancedCalculator = ({ isOpen, onClose }) => {
   }, [currencyFrom, currencyTo, currencyAmount]);
 
   const processVoiceCommand = (command) => {
-    // Simple voice command processing
+   
     if (command.includes('calculate') || command.includes('equals')) {
       handleEquals();
     } else if (command.includes('clear')) {
@@ -87,7 +87,7 @@ const AdvancedCalculator = ({ isOpen, onClose }) => {
       setOperation('/');
       setWaitingForNewValue(true);
     } else {
-      // Try to extract a number from the command
+      
       const numberMatch = command.match(/(\d+(\.\d+)?)/);
       if (numberMatch) {
         inputNumber(numberMatch[0]);
@@ -120,7 +120,7 @@ const AdvancedCalculator = ({ isOpen, onClose }) => {
     setWaitingForNewValue(false);
   };
 
-  // FIX: Renamed helper function to avoid conflict
+
   const performArithmetic = (firstValue, secondValue, operation) => {
     switch (operation) {
       case '+':
@@ -143,7 +143,7 @@ const AdvancedCalculator = ({ isOpen, onClose }) => {
       setPreviousValue(inputValue);
     } else if (operation) {
       const currentValue = previousValue || 0;
-      // FIX: Use the renamed helper function
+      
       const newValue = performArithmetic(currentValue, inputValue, operation);
 
       setDisplay(String(newValue));
@@ -154,16 +154,16 @@ const AdvancedCalculator = ({ isOpen, onClose }) => {
     setOperation(nextOperation);
   };
 
-  // FIX: Renamed function to handle the equals button press
+  
   const handleEquals = () => {
     const inputValue = parseFloat(display);
 
     if (previousValue !== null && operation) {
-      // FIX: Use the renamed helper function
+      
       const newValue = performArithmetic(previousValue, inputValue, operation);
       setDisplay(String(newValue));
       
-      // Add to history
+      
       const historyEntry = `${previousValue} ${operation} ${inputValue} = ${newValue}`;
       setHistory(prev => [historyEntry, ...prev].slice(0, 10));
       
@@ -209,7 +209,7 @@ const AdvancedCalculator = ({ isOpen, onClose }) => {
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(display);
-    // Show a toast notification (simplified)
+    
     if (resultRef.current) {
       const originalText = resultRef.current.innerText;
       resultRef.current.innerText = 'Copied!';

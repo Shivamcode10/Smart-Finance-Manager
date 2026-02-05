@@ -1,4 +1,4 @@
-// backend/models/Budget.js
+
 const mongoose = require('mongoose');
 
 const BudgetSchema = new mongoose.Schema({

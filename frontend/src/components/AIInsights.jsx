@@ -1,4 +1,4 @@
-// frontend/src/components/AIInsights.jsx
+
 import React, { useState, useEffect } from 'react';
 import { FinanceContext } from '../context/FinanceContext';
 import { FiTrendingUp, FiAlertCircle, FiTarget, FiDollarSign, FiInfo } from 'react-icons/fi';
@@ -16,23 +16,23 @@ const AIInsights = ({ transactions, goals, budgets }) => {
     setLoading(true);
     const newInsights = [];
 
-    // Analyze spending patterns
+    
     const spendingAnalysis = analyzeSpendingPatterns();
     if (spendingAnalysis) newInsights.push(spendingAnalysis);
 
-    // Analyze budget health
+    
     const budgetHealth = analyzeBudgetHealth();
     if (budgetHealth) newInsights.push(budgetHealth);
 
-    // Analyze goal progress
+    
     const goalProgress = analyzeGoalProgress();
     if (goalProgress) newInsights.push(goalProgress);
 
-    // Generate spending predictions
+    
     const predictions = generateSpendingPredictions();
     if (predictions) newInsights.push(predictions);
 
-    // Identify unusual spending
+    
     const unusualSpending = identifyUnusualSpending();
     if (unusualSpending) newInsights.push(unusualSpending);
 
@@ -50,7 +50,7 @@ const AIInsights = ({ transactions, goals, budgets }) => {
 
     if (recentTransactions.length < 5) return null;
 
-    // Calculate spending by category
+    
     const categorySpending = {};
     recentTransactions.forEach(t => {
       if (t.type === 'expense') {
@@ -62,7 +62,7 @@ const AIInsights = ({ transactions, goals, budgets }) => {
       }
     });
 
-    // Find top spending category
+    
     const topCategory = Object.entries(categorySpending)
       .sort((a, b) => b[1].total - a[1].total)[0];
 
@@ -145,7 +145,7 @@ const AIInsights = ({ transactions, goals, budgets }) => {
       const timePassed = (now - new Date(goal.createdAt)) / (deadline - new Date(goal.createdAt));
       const expectedProgress = timePassed * 100;
       const actualProgress = (goal.currentAmount / goal.targetAmount) * 100;
-      return actualProgress < expectedProgress * 0.8; // Behind by 20% or more
+      return actualProgress < expectedProgress * 0.8;
     });
 
     if (goalsBehind.length === 0) {
@@ -192,15 +192,15 @@ const AIInsights = ({ transactions, goals, budgets }) => {
 
     if (recentTransactions.length < 10) return null;
 
-    // Calculate daily spending average
+    
     const dailySpending = recentTransactions
       .filter(t => t.type === 'expense')
       .reduce((sum, t) => sum + t.amount, 0) / 30;
 
-    // Predict monthly spending
+   
     const predictedMonthlySpending = dailySpending * 30;
 
-    // Find spending trend
+    
     const firstHalf = recentTransactions.slice(0, Math.floor(recentTransactions.length / 2));
     const secondHalf = recentTransactions.slice(Math.floor(recentTransactions.length / 2));
 
@@ -236,7 +236,7 @@ const AIInsights = ({ transactions, goals, budgets }) => {
 
     if (recentTransactions.length < 5) return null;
 
-    // Find unusually large transactions
+    
     const expenses = recentTransactions.filter(t => t.type === 'expense');
     const amounts = expenses.map(t => t.amount);
     const average = amounts.reduce((sum, a) => sum + a, 0) / amounts.length;

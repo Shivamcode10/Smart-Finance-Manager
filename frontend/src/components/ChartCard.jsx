@@ -1,4 +1,4 @@
-// frontend/src/components/ChartCard.jsx
+
 import React from 'react';
 
 const ChartCard = ({ title, children, className = '' }) => {

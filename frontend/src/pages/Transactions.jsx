@@ -1,4 +1,4 @@
-// frontend/src/pages/Transactions.jsx
+
 import React, { useEffect, useState, useContext } from 'react';
 import { FinanceContext } from '../context/FinanceContext';
 import AddTransactionForm from '../components/AddTransactionForm';
