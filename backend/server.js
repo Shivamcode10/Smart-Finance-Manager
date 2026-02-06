@@ -17,11 +17,31 @@ const server = http.createServer(app);
 
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://smart-finance-managerweb.netlify.app"
+  "https://smart-finance-managerweb.netlify.app",
 ];
 
+const netlifyPreviewPattern = /^https:\/\/[a-z0-9-]+--smart-finance-managerweb\.netlify\.app$/i;
+const netlifyDeployUrlPattern = /^https:\/\/[a-z0-9-]+-smart-finance-managerweb\.netlify\.app$/i;
+
+const isOriginAllowed = (origin) => {
+  if (!origin) return true;
+
+  return (
+    allowedOrigins.includes(origin) ||
+    netlifyPreviewPattern.test(origin) ||
+    netlifyDeployUrlPattern.test(origin) ||
+    origin === process.env.FRONTEND_URL
+  );
+};
+
 const corsOptions = {
-  origin: allowedOrigins,
+  origin: (origin, callback) => {
+    if (isOriginAllowed(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(new Error("Not allowed by CORS"));
+  },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: false, // 🔴 IMPORTANT
@@ -33,7 +53,7 @@ app.options("*", cors(corsOptions));
 /* 🔑 FORCE CORS HEADERS FOR ALL RESPONSES (CRITICAL FIX) */
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
+  if (isOriginAllowed(origin)) {
     res.header("Access-Control-Allow-Origin", origin);
   }
   res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
@@ -54,7 +74,13 @@ app.use(express.urlencoded({ extended: false }));
 
 const io = new Server(server, {
   cors: {
-    origin: allowedOrigins,
+    origin: (origin, callback) => {
+      if (isOriginAllowed(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
     methods: ["GET", "POST"],
     credentials: false,
   },
