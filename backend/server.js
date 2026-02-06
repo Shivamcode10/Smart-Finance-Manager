@@ -1,4 +1,3 @@
-
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
@@ -12,28 +11,25 @@ connectDB();
 const app = express();
 const server = http.createServer(app);
 
-const allowedOrigins = [
-  "http://localhost:3000",
-  "https://smart-finance-managerweb.netlify.app",
-];
-
-const netlifyPreviewPattern = /^https:\/\/[a-z0-9-]+--smart-finance-managerweb\.netlify\.app$/i;
-const netlifyDeployUrlPattern = /^https:\/\/[a-z0-9-]+-smart-finance-managerweb\.netlify\.app$/i;
-
-const isOriginAllowed = (origin) => {
-  if (!origin) return true;
-
-  return (
-    allowedOrigins.includes(origin) ||
-    netlifyPreviewPattern.test(origin) ||
-    netlifyDeployUrlPattern.test(origin) ||
-    origin === process.env.FRONTEND_URL
-  );
-};
+/* =========================
+   CORS CONFIG (FIXED)
+========================= */
 
 const corsOptions = {
-  origin: (origin, callback) => {
-    if (isOriginAllowed(origin)) {
+  origin: function (origin, callback) {
+    // Allow server-to-server & Postman
+    if (!origin) return callback(null, true);
+
+    // Allow localhost
+    if (
+      origin === "http://localhost:3000" ||
+      origin === "http://localhost:5173"
+    ) {
+      return callback(null, true);
+    }
+
+    // ✅ Allow ALL Vercel deployments (important)
+    if (origin.endsWith(".vercel.app")) {
       return callback(null, true);
     }
 
@@ -41,53 +37,42 @@ const corsOptions = {
   },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: false, 
+  credentials: false,
 };
 
 app.use(cors(corsOptions));
 
-const allowedOrigins = [
-  "http://localhost:3000",
-  "http://localhost:5173",
-  "https://smart-finance-manager-xchf.vercel.app"
-];
-
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  methods: ["GET", "POST", "PUT", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: false
-};
-
-app.use(cors(corsOptions));
-
-
+/* =========================
+   BODY PARSER
+========================= */
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-
+/* =========================
+   SOCKET.IO
+========================= */
 
 const io = new Server(server, {
   cors: {
-    origin: [
-      "http://localhost:3000",
-      "http://localhost:5173",
-      "https://smart-finance-manager-xchf.vercel.app"
-    ],
+    origin: (origin, callback) => {
+      if (!origin || origin.endsWith(".vercel.app")) {
+        return callback(null, true);
+      }
+
+      if (
+        origin === "http://localhost:3000" ||
+        origin === "http://localhost:5173"
+      ) {
+        return callback(null, true);
+      }
+
+      callback(new Error("Socket CORS blocked"));
+    },
     methods: ["GET", "POST"],
     credentials: false,
   },
 });
-
 
 io.use((socket, next) => {
   const token = socket.handshake.auth?.token;
@@ -99,7 +84,9 @@ io.use((socket, next) => {
 
 app.set("io", io);
 
-
+/* =========================
+   ROUTES
+========================= */
 
 app.get("/", (req, res) => {
   res.send("Smart Finance Manager API is running 🚀");
@@ -111,6 +98,9 @@ app.use("/api/goals", require("./routes/goalRoutes"));
 app.use("/api/budgets", require("./routes/budgetRoutes"));
 app.use("/api/income-streams", require("./routes/incomeStreamRoutes"));
 
+/* =========================
+   SERVER START
+========================= */
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
