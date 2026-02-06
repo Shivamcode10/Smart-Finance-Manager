@@ -1,6 +1,6 @@
-
 import React, { useEffect, useState, useContext } from 'react';
 import { FinanceContext } from '../context/FinanceContext';
+import apiClient from '../utils/api';
 import { FiPlus, FiEdit2, FiTrash2, FiDollarSign } from 'react-icons/fi';
 
 const IncomeStreams = () => {
@@ -9,7 +9,6 @@ const IncomeStreams = () => {
     addIncomeStream,
     updateIncomeStream,
     deleteIncomeStream,
-    getMonthlyIncomeEstimate,
     incomeStreams,
   } = useContext(FinanceContext);
   const [showForm, setShowForm] = useState(false);
@@ -24,24 +23,17 @@ const IncomeStreams = () => {
 
   const fetchMonthlyEstimate = async () => {
     try {
-      const res = await fetch('http://localhost:5000/api/income-streams/estimate', {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`,
-        },
-      });
-      const data = await res.json();
-      if (data.success) {
-        setMonthlyEstimate(data.data.monthlyIncome);
-        setBreakdown(data.data.breakdown);
-      }
-    } catch (error) {
-      console.error('Error fetching monthly estimate:', error);
+      const res = await apiClient.get('/api/income-streams/estimate');
+      setMonthlyEstimate(res.data.estimate || 0);
+      setBreakdown(res.data.breakdown || {});
+    } catch (err) {
+      console.error('Error fetching monthly estimate:', err);
     }
   };
 
-  const handleEdit = (stream) => {
-    setEditingStream(stream);
-    setShowForm(true);
+  const closeForm = () => {
+    setShowForm(false);
+    setEditingStream(null);
   };
 
   const handleDelete = async (id) => {
@@ -51,12 +43,7 @@ const IncomeStreams = () => {
     }
   };
 
-  const closeForm = () => {
-    setShowForm(false);
-    setEditingStream(null);
-  };
-
-  const getFrequencyLabel = (frequency) => {
+  const formatFrequency = (frequency) => {
     switch (frequency) {
       case 'one-time':
         return 'One-time';
@@ -150,21 +137,21 @@ const IncomeStreams = () => {
                       ${stream.amount.toLocaleString()}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                      {getFrequencyLabel(stream.frequency)}
+                      {formatFrequency(stream.frequency)}
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm">
                       <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                         stream.isActive
                           ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                          : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
+                          : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200'
                       }`}>
                         {stream.isActive ? 'Active' : 'Inactive'}
                       </span>
                     </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                    <td className="px-6 py-4 whitespace-nowrap text-sm space-x-2">
                       <button
-                        onClick={() => handleEdit(stream)}
-                        className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-3"
+                        onClick={() => setEditingStream(stream)}
+                        className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300"
                       >
                         <FiEdit2 className="h-4 w-4" />
                       </button>
