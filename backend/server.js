@@ -11,7 +11,9 @@ connectDB();
 const app = express();
 const server = http.createServer(app);
 
-
+/* =======================
+   CORS CONFIG (FINAL)
+======================= */
 
 const allowedOrigins = [
   "http://localhost:3000",
@@ -22,12 +24,13 @@ const corsOptions = {
   origin: allowedOrigins,
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: false, 
+  credentials: false, // 🔴 IMPORTANT
 };
 
 app.use(cors(corsOptions));
 app.options("*", cors(corsOptions));
 
+/* 🔑 FORCE CORS HEADERS FOR ALL RESPONSES (CRITICAL FIX) */
 app.use((req, res, next) => {
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
@@ -38,25 +41,24 @@ app.use((req, res, next) => {
   next();
 });
 
-
-
-
-app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
+/* =======================
+   BODY PARSERS
+======================= */
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-
+/* =======================
+   SOCKET.IO
+======================= */
 
 const io = new Server(server, {
   cors: {
     origin: allowedOrigins,
     methods: ["GET", "POST"],
-    credentials: true,
+    credentials: false,
   },
 });
-
 
 io.use((socket, next) => {
   const token = socket.handshake.auth?.token;
@@ -66,28 +68,11 @@ io.use((socket, next) => {
   next();
 });
 
-const connectedUsers = new Map();
-
-io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
-
-  socket.on("join", (userId) => {
-    socket.join(userId);
-    connectedUsers.set(userId, socket.id);
-  });
-
-  socket.on("disconnect", () => {
-    for (const [userId, socketId] of connectedUsers.entries()) {
-      if (socketId === socket.id) {
-        connectedUsers.delete(userId);
-        break;
-      }
-    }
-  });
-});
-
 app.set("io", io);
 
+/* =======================
+   ROUTES
+======================= */
 
 app.get("/", (req, res) => {
   res.send("Smart Finance Manager API is running 🚀");
@@ -99,7 +84,9 @@ app.use("/api/goals", require("./routes/goalRoutes"));
 app.use("/api/budgets", require("./routes/budgetRoutes"));
 app.use("/api/income-streams", require("./routes/incomeStreamRoutes"));
 
-
+/* =======================
+   START SERVER
+======================= */
 
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
