@@ -12,10 +12,35 @@ const app = express();
 const server = http.createServer(app);
 
 
+
 const allowedOrigins = [
   "http://localhost:3000",
   "https://smart-finance-managerweb.netlify.app"
 ];
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("CORS blocked: " + origin));
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+};
+
+
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions));
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 
 
 
@@ -27,15 +52,12 @@ const io = new Server(server, {
   },
 });
 
-// 🔐 Socket.IO auth middleware (VERY IMPORTANT)
+
 io.use((socket, next) => {
   const token = socket.handshake.auth?.token;
-
   if (!token) {
     return next(new Error("Unauthorized socket connection"));
   }
-
-  // (Optional) you can verify JWT here later
   next();
 });
 
@@ -47,11 +69,9 @@ io.on("connection", (socket) => {
   socket.on("join", (userId) => {
     socket.join(userId);
     connectedUsers.set(userId, socket.id);
-    console.log(`User ${userId} joined their room`);
   });
 
   socket.on("disconnect", () => {
-    console.log("User disconnected:", socket.id);
     for (const [userId, socketId] of connectedUsers.entries()) {
       if (socketId === socket.id) {
         connectedUsers.delete(userId);
@@ -64,34 +84,9 @@ io.on("connection", (socket) => {
 app.set("io", io);
 
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: false }));
-
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
-
-      const allowed = allowedOrigins.some(o =>
-        origin.startsWith(o)
-      );
-
-      if (allowed) {
-        callback(null, true);
-      } else {
-        callback(new Error("Not allowed by CORS: " + origin));
-      }
-    },
-    credentials: true,
-  })
-);
-
-app.options("*", cors());
-
 app.get("/", (req, res) => {
   res.send("Smart Finance Manager API is running 🚀");
 });
-
 
 app.use("/api/auth", require("./routes/authRoutes"));
 app.use("/api/transactions", require("./routes/transactionRoutes"));
@@ -99,7 +94,9 @@ app.use("/api/goals", require("./routes/goalRoutes"));
 app.use("/api/budgets", require("./routes/budgetRoutes"));
 app.use("/api/income-streams", require("./routes/incomeStreamRoutes"));
 
+
+
 const PORT = process.env.PORT || 5000;
-server.listen(PORT, () =>
-  console.log(`Server running on port ${PORT}`)
-);
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
