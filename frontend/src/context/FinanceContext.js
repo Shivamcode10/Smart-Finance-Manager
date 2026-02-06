@@ -1,8 +1,22 @@
-
 import React, { createContext, useReducer, useEffect, useState } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
 
+// --- CONFIGURATION ---
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const SOCKET_URL = process.env.REACT_APP_SOCKET_URL || 'http://localhost:5000';
+
+// Console warning for debugging
+if (process.env.NODE_ENV === 'production' && API_URL.includes('localhost')) {
+  console.error(
+    'CRITICAL ERROR: You are in Production but API_URL is defaulting to localhost. ' +
+    'Please set REACT_APP_API_URL and REACT_APP_SOCKET_URL in Netlify Environment Variables.'
+  );
+}
+
+console.log('Connecting to API:', API_URL);
+console.log('Connecting to Socket:', SOCKET_URL);
+// ---------------------
 
 const initialState = {
   user: null,
@@ -23,7 +37,6 @@ const initialState = {
   theme: 'light',
   error: null,
 };
-
 
 export const FinanceContext = createContext(initialState);
 
@@ -220,62 +233,51 @@ const financeReducer = (state, action) => {
   }
 };
 
-
 export const FinanceProvider = ({ children }) => {
   const [state, dispatch] = useReducer(financeReducer, initialState);
   const [socket, setSocket] = useState(null);
 
-  
-  axios.defaults.baseURL =
-  process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+  // Set Axios Base URL
+  axios.defaults.baseURL = API_URL;
 
+  useEffect(() => {
+    if (!state.user) return;
 
-useEffect(() => {
-  if (!state.user) return;
+    const newSocket = io(SOCKET_URL, {
+      auth: {
+        token: localStorage.getItem('token'),
+      },
+      transports: ['websocket', 'polling'], // Added polling as fallback
+    });
 
-  const SOCKET_URL =
-    process.env.REACT_APP_SOCKET_URL || 'http://localhost:5000';
+    setSocket(newSocket);
 
-  const newSocket = io(SOCKET_URL, {
-    auth: {
-      token: localStorage.getItem('token'),
-    },
-    transports: ['websocket'],
-  });
+    newSocket.emit('join', state.user._id);
 
-  setSocket(newSocket);
+    newSocket.on('newTransaction', (transaction) => {
+      dispatch({ type: 'ADD_TRANSACTION', payload: transaction });
+      getStats();
+    });
 
-  newSocket.emit('join', state.user._id);
+    newSocket.on('updatedTransaction', (transaction) => {
+      dispatch({ type: 'UPDATE_TRANSACTION', payload: transaction });
+      getStats();
+    });
 
-  newSocket.on('newTransaction', (transaction) => {
-    dispatch({ type: 'ADD_TRANSACTION', payload: transaction });
-    getStats();
-  });
+    newSocket.on('deletedTransaction', (transactionId) => {
+      dispatch({ type: 'DELETE_TRANSACTION', payload: transactionId });
+      getStats();
+    });
 
-  newSocket.on('updatedTransaction', (transaction) => {
-    dispatch({ type: 'UPDATE_TRANSACTION', payload: transaction });
-    getStats();
-  });
+    return () => {
+      newSocket.disconnect();
+    };
+  }, [state.user]);
 
-  newSocket.on('deletedTransaction', (transactionId) => {
-    dispatch({ type: 'DELETE_TRANSACTION', payload: transactionId });
-    getStats();
-  });
-
-  return () => {
-    newSocket.disconnect();
-  };
-}, [state.user]);
-
-
-  
-
- 
   const loadUser = async () => {
     const token = localStorage.token;
     
     if (token) {
-      
       setAuthToken(token);
       
       try {
@@ -293,39 +295,27 @@ useEffect(() => {
     }
   };
 
-  
   const setAuthToken = token => {
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      console.log('Token set in headers:', token);
     } else {
       delete axios.defaults.headers.common['Authorization'];
-      console.log('Token removed from headers');
     }
   };
 
-  
   const clearError = () => {
     dispatch({ type: 'CLEAR_ERROR' });
   };
 
-  
   const register = async formData => {
     try {
       const res = await axios.post('/auth/register', formData);
-      
-      
       localStorage.setItem('token', res.data.token);
-      
-      
       setAuthToken(res.data.token);
-      
       dispatch({
         type: 'REGISTER_SUCCESS',
         payload: res.data,
       });
-      
-      
       await loadUser();
     } catch (err) {
       dispatch({
@@ -335,23 +325,15 @@ useEffect(() => {
     }
   };
 
-  
   const login = async formData => {
     try {
       const res = await axios.post('/auth/login', formData);
-      
-      
       localStorage.setItem('token', res.data.token);
-      
-      
       setAuthToken(res.data.token);
-      
       dispatch({
         type: 'LOGIN_SUCCESS',
         payload: res.data,
       });
-      
-      
       await loadUser();
     } catch (err) {
       dispatch({
@@ -361,524 +343,155 @@ useEffect(() => {
     }
   };
 
-
   const logout = () => {
-    
     if (socket) {
       socket.disconnect();
     }
     dispatch({ type: 'LOGOUT' });
   };
 
-  
+  // Helper to handle 401s consistently
+  const handleApiCall = async (apiFunc) => {
+    try {
+      const res = await apiFunc();
+      return res.data.data;
+    } catch (err) {
+      if (err.response?.status === 401) {
+        dispatch({ type: 'AUTH_ERROR', payload: err.response.data.message });
+      } else {
+        const errorMsg = err.response?.data?.message || 'An error occurred';
+        console.error(errorMsg);
+        throw new Error(errorMsg);
+      }
+    }
+  };
+
   const getTransactions = async () => {
     try {
       const res = await axios.get('/transactions');
-      dispatch({
-        type: 'GET_TRANSACTIONS',
-        payload: res.data.data,
-      });
-    } catch (err) {
-      
-      if (err.response?.status === 401) {
-        dispatch({
-          type: 'AUTH_ERROR',
-          payload: err.response.data.message,
-        });
-      } else {
-        dispatch({
-          type: 'CLEAR_ERROR',
-          payload: err.response?.data?.message || 'Failed to fetch transactions',
-        });
-      }
-    }
+      dispatch({ type: 'GET_TRANSACTIONS', payload: res.data.data });
+    } catch (err) { /* Handle error */ }
   };
 
-  
   const addTransaction = async formData => {
-    try {
-      const res = await axios.post('/transactions', formData);
-      
-      
-      dispatch({
-        type: 'ADD_TRANSACTION',
-        payload: res.data.data,
-      });
-      
-      
-      return res.data.data;
-    } catch (err) {
-      
-      if (err.response?.status === 401) {
-        dispatch({
-          type: 'AUTH_ERROR',
-          payload: err.response.data.message,
-        });
-      } else {
-        
-        const error = new Error(err.response?.data?.message || 'Failed to add transaction');
-        error.status = err.response?.status;
-        throw error;
-      }
-    }
+    const data = await handleApiCall(() => axios.post('/transactions', formData));
+    dispatch({ type: 'ADD_TRANSACTION', payload: data });
+    return data;
   };
 
-  
   const updateTransaction = async (id, formData) => {
-    try {
-      const res = await axios.put(`/transactions/${id}`, formData);
-      
-     
-      dispatch({
-        type: 'UPDATE_TRANSACTION',
-        payload: res.data.data,
-      });
-      
-      
-      return res.data.data;
-    } catch (err) {
-     
-      if (err.response?.status === 401) {
-        dispatch({
-          type: 'AUTH_ERROR',
-          payload: err.response.data.message,
-        });
-      } else {
-        
-        const error = new Error(err.response?.data?.message || 'Failed to update transaction');
-        error.status = err.response?.status;
-        throw error;
-      }
-    }
+    const data = await handleApiCall(() => axios.put(`/transactions/${id}`, formData));
+    dispatch({ type: 'UPDATE_TRANSACTION', payload: data });
+    return data;
   };
 
- 
   const deleteTransaction = async id => {
-    try {
-      await axios.delete(`/transactions/${id}`);
-      
-    
-      dispatch({
-        type: 'DELETE_TRANSACTION',
-        payload: id,
-      });
-    } catch (err) {
-      
-      if (err.response?.status === 401) {
-        dispatch({
-          type: 'AUTH_ERROR',
-          payload: err.response.data.message,
-        });
-      } else {
-      
-        const error = new Error(err.response?.data?.message || 'Failed to delete transaction');
-        error.status = err.response?.status;
-        throw error;
-      }
-    }
+    await handleApiCall(() => axios.delete(`/transactions/${id}`));
+    dispatch({ type: 'DELETE_TRANSACTION', payload: id });
   };
 
-  
   const getStats = async (period = 'month') => {
     try {
       const res = await axios.get(`/transactions/stats?period=${period}`);
-      dispatch({
-        type: 'GET_STATS',
-        payload: res.data.data,
-      });
-    } catch (err) {
-     
-      if (err.response?.status === 401) {
-        dispatch({
-          type: 'AUTH_ERROR',
-          payload: err.response.data.message,
-        });
-      } else {
-        dispatch({
-          type: 'CLEAR_ERROR',
-          payload: err.response?.data?.message || 'Failed to fetch stats',
-        });
-      }
-    }
+      dispatch({ type: 'GET_STATS', payload: res.data.data });
+    } catch (err) { /* Handle error */ }
   };
 
-  
   const getGoals = async () => {
     try {
       const res = await axios.get('/goals');
-      dispatch({
-        type: 'GET_GOALS',
-        payload: res.data.data,
-      });
-    } catch (err) {
-      
-      if (err.response?.status === 401) {
-        dispatch({
-          type: 'AUTH_ERROR',
-          payload: err.response.data.message,
-        });
-      } else {
-        dispatch({
-          type: 'CLEAR_ERROR',
-          payload: err.response?.data?.message || 'Failed to fetch goals',
-        });
-      }
-    }
+      dispatch({ type: 'GET_GOALS', payload: res.data.data });
+    } catch (err) { /* Handle error */ }
   };
 
- 
   const addGoal = async formData => {
-    try {
-      const res = await axios.post('/goals', formData);
-      dispatch({
-        type: 'ADD_GOAL',
-        payload: res.data.data,
-      });
-      return res.data.data;
-    } catch (err) {
-      
-      if (err.response?.status === 401) {
-        dispatch({
-          type: 'AUTH_ERROR',
-          payload: err.response.data.message,
-        });
-      } else {
-        dispatch({
-          type: 'CLEAR_ERROR',
-          payload: err.response?.data?.message || 'Failed to add goal',
-        });
-      }
-    }
+    const data = await handleApiCall(() => axios.post('/goals', formData));
+    dispatch({ type: 'ADD_GOAL', payload: data });
+    return data;
   };
 
- 
   const updateGoal = async (id, formData) => {
-    try {
-      const res = await axios.put(`/goals/${id}`, formData);
-      dispatch({
-        type: 'UPDATE_GOAL',
-        payload: res.data.data,
-      });
-      return res.data.data;
-    } catch (err) {
-      
-      if (err.response?.status === 401) {
-        dispatch({
-          type: 'AUTH_ERROR',
-          payload: err.response.data.message,
-        });
-      } else {
-        dispatch({
-          type: 'CLEAR_ERROR',
-          payload: err.response?.data?.message || 'Failed to update goal',
-        });
-      }
-    }
+    const data = await handleApiCall(() => axios.put(`/goals/${id}`, formData));
+    dispatch({ type: 'UPDATE_GOAL', payload: data });
+    return data;
   };
 
-  
   const updateGoalProgress = async (id, amount) => {
-    try {
-      const res = await axios.put(`/goals/${id}/progress`, { amount });
-      dispatch({
-        type: 'UPDATE_GOAL',
-        payload: res.data.data,
-      });
-      return res.data.data;
-    } catch (err) {
-      
-      if (err.response?.status === 401) {
-        dispatch({
-          type: 'AUTH_ERROR',
-          payload: err.response.data.message,
-        });
-      } else {
-        dispatch({
-          type: 'CLEAR_ERROR',
-          payload: err.response?.data?.message || 'Failed to update goal progress',
-        });
-      }
-    }
+    const data = await handleApiCall(() => axios.put(`/goals/${id}/progress`, { amount }));
+    dispatch({ type: 'UPDATE_GOAL', payload: data });
+    return data;
   };
 
- 
   const deleteGoal = async id => {
-    try {
-      await axios.delete(`/goals/${id}`);
-      dispatch({
-        type: 'DELETE_GOAL',
-        payload: id,
-      });
-    } catch (err) {
-      
-      if (err.response?.status === 401) {
-        dispatch({
-          type: 'AUTH_ERROR',
-          payload: err.response.data.message,
-        });
-      } else {
-        dispatch({
-          type: 'DELETE_GOAL_ERROR',
-          payload: err.response?.data?.message || 'Failed to delete goal',
-        });
-      }
-    }
+    await handleApiCall(() => axios.delete(`/goals/${id}`));
+    dispatch({ type: 'DELETE_GOAL', payload: id });
   };
 
-  
   const getBudgets = async () => {
     try {
       const res = await axios.get('/budgets');
-      dispatch({
-        type: 'GET_BUDGETS',
-        payload: res.data.data,
-      });
-    } catch (err) {
-      
-      if (err.response?.status === 401) {
-        dispatch({
-          type: 'AUTH_ERROR',
-          payload: err.response.data.message,
-        });
-      } else {
-        dispatch({
-          type: 'CLEAR_ERROR',
-          payload: err.response?.data?.message || 'Failed to fetch budgets',
-        });
-      }
-    }
+      dispatch({ type: 'GET_BUDGETS', payload: res.data.data });
+    } catch (err) { /* Handle error */ }
   };
 
-  
   const addBudget = async formData => {
-    try {
-      const res = await axios.post('/budgets', formData);
-      dispatch({
-        type: 'ADD_BUDGET',
-        payload: res.data.data,
-      });
-      return res.data.data;
-    } catch (err) {
-      
-      if (err.response?.status === 401) {
-        dispatch({
-          type: 'AUTH_ERROR',
-          payload: err.response.data.message,
-        });
-      } else {
-        dispatch({
-          type: 'CLEAR_ERROR',
-          payload: err.response?.data?.message || 'Failed to add budget',
-        });
-      }
-    }
+    const data = await handleApiCall(() => axios.post('/budgets', formData));
+    dispatch({ type: 'ADD_BUDGET', payload: data });
+    return data;
   };
 
-  
   const updateBudget = async (id, formData) => {
-    try {
-      const res = await axios.put(`/budgets/${id}`, formData);
-      dispatch({
-        type: 'UPDATE_BUDGET',
-        payload: res.data.data,
-      });
-      return res.data.data;
-    } catch (err) {
-      
-      if (err.response?.status === 401) {
-        dispatch({
-          type: 'AUTH_ERROR',
-          payload: err.response.data.message,
-        });
-      } else {
-        dispatch({
-          type: 'CLEAR_ERROR',
-          payload: err.response?.data?.message || 'Failed to update budget',
-        });
-      }
-    }
+    const data = await handleApiCall(() => axios.put(`/budgets/${id}`, formData));
+    dispatch({ type: 'UPDATE_BUDGET', payload: data });
+    return data;
   };
 
- 
   const deleteBudget = async id => {
-    try {
-      await axios.delete(`/budgets/${id}`);
-      dispatch({
-        type: 'DELETE_BUDGET',
-        payload: id,
-      });
-    } catch (err) {
-      
-      if (err.response?.status === 401) {
-        dispatch({
-          type: 'AUTH_ERROR',
-          payload: err.response.data.message,
-        });
-      } else {
-        dispatch({
-          type: 'DELETE_BUDGET_ERROR',
-          payload: err.response?.data?.message || 'Failed to delete budget',
-        });
-      }
-    }
+    await handleApiCall(() => axios.delete(`/budgets/${id}`));
+    dispatch({ type: 'DELETE_BUDGET', payload: id });
   };
-
 
   const getIncomeStreams = async () => {
     try {
       const res = await axios.get('/income-streams');
-      dispatch({
-        type: 'GET_INCOME_STREAMS',
-        payload: res.data.data,
-      });
-    } catch (err) {
-      
-      if (err.response?.status === 401) {
-        dispatch({
-          type: 'AUTH_ERROR',
-          payload: err.response.data.message,
-        });
-      } else {
-        dispatch({
-          type: 'CLEAR_ERROR',
-          payload: err.response?.data?.message || 'Failed to fetch income streams',
-        });
-      }
-    }
+      dispatch({ type: 'GET_INCOME_STREAMS', payload: res.data.data });
+    } catch (err) { /* Handle error */ }
   };
-
 
   const addIncomeStream = async formData => {
-    try {
-      const res = await axios.post('/income-streams', formData);
-      dispatch({
-        type: 'ADD_INCOME_STREAM',
-        payload: res.data.data,
-      });
-      return res.data.data;
-    } catch (err) {
-      
-      if (err.response?.status === 401) {
-        dispatch({
-          type: 'AUTH_ERROR',
-          payload: err.response.data.message,
-        });
-      } else {
-        dispatch({
-          type: 'CLEAR_ERROR',
-          payload: err.response?.data?.message || 'Failed to add income stream',
-        });
-      }
-    }
+    const data = await handleApiCall(() => axios.post('/income-streams', formData));
+    dispatch({ type: 'ADD_INCOME_STREAM', payload: data });
+    return data;
   };
 
-  
   const updateIncomeStream = async (id, formData) => {
-    try {
-      const res = await axios.put(`/income-streams/${id}`, formData);
-      dispatch({
-        type: 'UPDATE_INCOME_STREAM',
-        payload: res.data.data,
-      });
-      return res.data.data;
-    } catch (err) {
-      
-      if (err.response?.status === 401) {
-        dispatch({
-          type: 'AUTH_ERROR',
-          payload: err.response.data.message,
-        });
-      } else {
-        dispatch({
-          type: 'CLEAR_ERROR',
-          payload: err.response?.data?.message || 'Failed to update income stream',
-        });
-      }
-    }
+    const data = await handleApiCall(() => axios.put(`/income-streams/${id}`, formData));
+    dispatch({ type: 'UPDATE_INCOME_STREAM', payload: data });
+    return data;
   };
-
 
   const deleteIncomeStream = async id => {
-    try {
-      await axios.delete(`/income-streams/${id}`);
-      dispatch({
-        type: 'DELETE_INCOME_STREAM',
-        payload: id,
-      });
-    } catch (err) {
-      
-      if (err.response?.status === 401) {
-        dispatch({
-          type: 'AUTH_ERROR',
-          payload: err.response.data.message,
-        });
-      } else {
-        dispatch({
-          type: 'DELETE_INCOME_STREAM_ERROR',
-          payload: err.response?.data?.message || 'Failed to delete income stream',
-        });
-      }
-    }
+    await handleApiCall(() => axios.delete(`/income-streams/${id}`));
+    dispatch({ type: 'DELETE_INCOME_STREAM', payload: id });
   };
 
- 
   const getAlerts = async () => {
     try {
       const res = await axios.get('/budgets/alerts');
-      dispatch({
-        type: 'GET_ALERTS',
-        payload: res.data.data,
-      });
-    } catch (err) {
-      
-      if (err.response?.status === 401) {
-        dispatch({
-          type: 'AUTH_ERROR',
-          payload: err.response.data.message,
-        });
-      } else {
-        dispatch({
-          type: 'CLEAR_ERROR',
-          payload: err.response?.data?.message || 'Failed to fetch alerts',
-        });
-      }
-    }
+      dispatch({ type: 'GET_ALERTS', payload: res.data.data });
+    } catch (err) { /* Handle error */ }
   };
 
- 
   const setTheme = theme => {
-    dispatch({
-      type: 'SET_THEME',
-      payload: theme,
-    });
+    dispatch({ type: 'SET_THEME', payload: theme });
   };
 
-  
   const updateUserDetails = async formData => {
-    try {
-      const res = await axios.put('/auth/updatedetails', formData);
-      dispatch({
-        type: 'USER_LOADED',
-        payload: res.data.data,
-      });
-      return res.data.data;
-    } catch (err) {
-      
-      if (err.response?.status === 401) {
-        dispatch({
-          type: 'AUTH_ERROR',
-          payload: err.response.data.message,
-        });
-      } else {
-        dispatch({
-          type: 'CLEAR_ERROR',
-          payload: err.response?.data?.message || 'Failed to update user details',
-        });
-      }
-    }
+    const data = await handleApiCall(() => axios.put('/auth/updatedetails', formData));
+    dispatch({ type: 'USER_LOADED', payload: data });
+    return data;
   };
 
-  
   useEffect(() => {
     loadUser();
   }, []);
