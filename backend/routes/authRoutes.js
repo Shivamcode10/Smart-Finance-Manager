@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 
-router.options("*", (req, res) => res.sendStatus(204));
+
 
 const {
   register,

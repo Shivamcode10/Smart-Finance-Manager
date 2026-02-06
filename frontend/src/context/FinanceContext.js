@@ -1,4 +1,3 @@
-
 import React, { createContext, useReducer, useEffect, useState } from 'react';
 import axios from 'axios';
 import io from 'socket.io-client';
@@ -227,14 +226,16 @@ export const FinanceProvider = ({ children }) => {
 
   
   axios.defaults.baseURL =
-  process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+  process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 
 
 useEffect(() => {
   if (!state.user) return;
 
   const SOCKET_URL =
-    process.env.REACT_APP_SOCKET_URL || 'http://localhost:5000';
+  process.env.REACT_APP_API_URL || 'http://localhost:5000';
+
 
   const newSocket = io(SOCKET_URL, {
     auth: {
@@ -279,7 +280,7 @@ useEffect(() => {
       setAuthToken(token);
       
       try {
-        const res = await axios.get('/auth/me');
+        const res = await axios.get('/api/auth/me');
         dispatch({
           type: 'USER_LOADED',
           payload: res.data.data,
@@ -312,7 +313,7 @@ useEffect(() => {
   
   const register = async formData => {
     try {
-      const res = await axios.post('/auth/register', formData);
+      const res = await axios.post('/api/auth/register', formData);
       
       
       localStorage.setItem('token', res.data.token);
@@ -338,7 +339,7 @@ useEffect(() => {
   
   const login = async formData => {
     try {
-      const res = await axios.post('/auth/login', formData);
+      const res = await axios.post('/api/auth/login', formData);
       
       
       localStorage.setItem('token', res.data.token);
@@ -373,7 +374,7 @@ useEffect(() => {
   
   const getTransactions = async () => {
     try {
-      const res = await axios.get('/transactions');
+      const res = await axios.get('/api/transactions');
       dispatch({
         type: 'GET_TRANSACTIONS',
         payload: res.data.data,
@@ -397,7 +398,7 @@ useEffect(() => {
   
   const addTransaction = async formData => {
     try {
-      const res = await axios.post('/transactions', formData);
+      const res = await axios.post('/api/transactions', formData);
       
       
       dispatch({
@@ -426,7 +427,7 @@ useEffect(() => {
   
   const updateTransaction = async (id, formData) => {
     try {
-      const res = await axios.put(`/transactions/${id}`, formData);
+      const res = await axios.put(`/api/transactions/${id}`, formData);
       
      
       dispatch({
@@ -455,7 +456,7 @@ useEffect(() => {
  
   const deleteTransaction = async id => {
     try {
-      await axios.delete(`/transactions/${id}`);
+      await axios.delete(`/api/transactions/${id}`);
       
     
       dispatch({
@@ -481,7 +482,7 @@ useEffect(() => {
   
   const getStats = async (period = 'month') => {
     try {
-      const res = await axios.get(`/transactions/stats?period=${period}`);
+      const res = await axios.get(`/api/transactions/stats?period=${period}`);
       dispatch({
         type: 'GET_STATS',
         payload: res.data.data,
@@ -505,7 +506,7 @@ useEffect(() => {
   
   const getGoals = async () => {
     try {
-      const res = await axios.get('/goals');
+      const res = await axios.get('/api/goals');
       dispatch({
         type: 'GET_GOALS',
         payload: res.data.data,
@@ -529,7 +530,7 @@ useEffect(() => {
  
   const addGoal = async formData => {
     try {
-      const res = await axios.post('/goals', formData);
+      const res = await axios.post('/api/goals', formData);
       dispatch({
         type: 'ADD_GOAL',
         payload: res.data.data,
@@ -554,7 +555,7 @@ useEffect(() => {
  
   const updateGoal = async (id, formData) => {
     try {
-      const res = await axios.put(`/goals/${id}`, formData);
+      const res = await axios.put(`/api/goals/${id}`, formData);
       dispatch({
         type: 'UPDATE_GOAL',
         payload: res.data.data,
@@ -579,7 +580,7 @@ useEffect(() => {
   
   const updateGoalProgress = async (id, amount) => {
     try {
-      const res = await axios.put(`/goals/${id}/progress`, { amount });
+      const res = await axios.put(`/api/goals/${id}/progress`, { amount });
       dispatch({
         type: 'UPDATE_GOAL',
         payload: res.data.data,
@@ -604,7 +605,7 @@ useEffect(() => {
  
   const deleteGoal = async id => {
     try {
-      await axios.delete(`/goals/${id}`);
+      await axios.delete(`/api/goals/${id}`);
       dispatch({
         type: 'DELETE_GOAL',
         payload: id,
@@ -628,7 +629,7 @@ useEffect(() => {
   
   const getBudgets = async () => {
     try {
-      const res = await axios.get('/budgets');
+      const res = await axios.get('/api/budgets');
       dispatch({
         type: 'GET_BUDGETS',
         payload: res.data.data,
@@ -652,7 +653,7 @@ useEffect(() => {
   
   const addBudget = async formData => {
     try {
-      const res = await axios.post('/budgets', formData);
+      const res = await axios.post('/api/budgets', formData);
       dispatch({
         type: 'ADD_BUDGET',
         payload: res.data.data,
@@ -677,7 +678,7 @@ useEffect(() => {
   
   const updateBudget = async (id, formData) => {
     try {
-      const res = await axios.put(`/budgets/${id}`, formData);
+      const res = await axios.put(`/api/budgets/${id}`, formData);
       dispatch({
         type: 'UPDATE_BUDGET',
         payload: res.data.data,
@@ -702,7 +703,7 @@ useEffect(() => {
  
   const deleteBudget = async id => {
     try {
-      await axios.delete(`/budgets/${id}`);
+      await axios.delete(`/api/budgets/${id}`);
       dispatch({
         type: 'DELETE_BUDGET',
         payload: id,
@@ -726,7 +727,7 @@ useEffect(() => {
 
   const getIncomeStreams = async () => {
     try {
-      const res = await axios.get('/income-streams');
+      const res = await axios.get('/api/income-streams');
       dispatch({
         type: 'GET_INCOME_STREAMS',
         payload: res.data.data,
@@ -750,7 +751,7 @@ useEffect(() => {
 
   const addIncomeStream = async formData => {
     try {
-      const res = await axios.post('/income-streams', formData);
+      const res = await axios.post('/api/income-streams', formData);
       dispatch({
         type: 'ADD_INCOME_STREAM',
         payload: res.data.data,
@@ -775,7 +776,7 @@ useEffect(() => {
   
   const updateIncomeStream = async (id, formData) => {
     try {
-      const res = await axios.put(`/income-streams/${id}`, formData);
+      const res = await axios.put(`/api/income-streams/${id}`, formData);
       dispatch({
         type: 'UPDATE_INCOME_STREAM',
         payload: res.data.data,
@@ -800,7 +801,7 @@ useEffect(() => {
 
   const deleteIncomeStream = async id => {
     try {
-      await axios.delete(`/income-streams/${id}`);
+      await axios.delete(`/api/income-streams/${id}`);
       dispatch({
         type: 'DELETE_INCOME_STREAM',
         payload: id,
@@ -824,7 +825,7 @@ useEffect(() => {
  
   const getAlerts = async () => {
     try {
-      const res = await axios.get('/budgets/alerts');
+      const res = await axios.get('/api/budgets/alerts');
       dispatch({
         type: 'GET_ALERTS',
         payload: res.data.data,
@@ -856,7 +857,7 @@ useEffect(() => {
   
   const updateUserDetails = async formData => {
     try {
-      const res = await axios.put('/auth/updatedetails', formData);
+      const res = await axios.put('/api/auth/updatedetails', formData);
       dispatch({
         type: 'USER_LOADED',
         payload: res.data.data,

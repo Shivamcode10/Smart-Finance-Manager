@@ -45,18 +45,29 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions));
 
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:5173",
+  "https://smart-finance-manager-xchf.vercel.app"
+];
 
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (isOriginAllowed(origin)) {
-    res.header("Access-Control-Allow-Origin", origin);
-  }
-  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  next();
-});
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: false
+};
+
+app.use(cors(corsOptions));
 
 
 
@@ -67,17 +78,16 @@ app.use(express.urlencoded({ extended: false }));
 
 const io = new Server(server, {
   cors: {
-    origin: (origin, callback) => {
-      if (isOriginAllowed(origin)) {
-        return callback(null, true);
-      }
-
-      return callback(new Error("Not allowed by CORS"));
-    },
+    origin: [
+      "http://localhost:3000",
+      "http://localhost:5173",
+      "https://smart-finance-manager-xchf.vercel.app"
+    ],
     methods: ["GET", "POST"],
     credentials: false,
   },
 });
+
 
 io.use((socket, next) => {
   const token = socket.handshake.auth?.token;
